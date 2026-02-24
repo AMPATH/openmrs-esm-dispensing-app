@@ -38,9 +38,18 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
           return sessionLocation?.uuid === l.associatedPharmacyLocation;
         }) || [],
       );
+
+      // Should display from current location
+      const initialLocations: SimpleLocation[] = [];
+      if (config.locationBehavior.locationFilter.useCurrentLocation) {
+        initialLocations.push(...(locations?.filter((l) => l.id === sessionLocation?.uuid) || []));
+      }
+
+      setFilterLocations(initialLocations || []);
+
       isInitialized.current = true; // we only want to run when the component is first mounted so we don't override user changes
     }
-  }, [isLocationsLoading, sessionLocation, locations]);
+  }, [isLocationsLoading, sessionLocation, locations, config]);
 
   return (
     <TabPanel>
