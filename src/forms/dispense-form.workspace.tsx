@@ -9,6 +9,7 @@ import {
   showSnackbar,
   useConfig,
   usePatient,
+  useVisit,
   Workspace2,
   type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
@@ -35,6 +36,7 @@ import { updateMedicationRequestFulfillerStatus } from '../medication-request/me
 import MedicationDispenseReview from './medication-dispense-review.component';
 import StockDispense from './stock-dispense/stock-dispense.component';
 import styles from './forms.scss';
+import { endVisit } from '../visit/visit.resource';
 
 type DispenseFormProps = {
   medicationDispense: MedicationDispense;
@@ -66,6 +68,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   const { mutate } = useSWRConfig();
   const { patient, isLoading } = usePatient(patientUuid);
   const config = useConfig<PharmacyConfig>();
+  const { activeVisit } = useVisit(patientUuid);
 
   // Keep track of inventory item
   const [inventoryItem, setInventoryItem] = useState<InventoryItem>();
@@ -168,7 +171,15 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                 medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
               ),
               MedicationRequestFulfillerStatus.completed,
-            ).then(() => response);
+            ).then(() => {
+               if (config.dispenseBehavior.endActiveVisitOnCompletingOrder) {
+                  if (activeVisit) {
+                    const visitUuid = activeVisit?.uuid;
+                    endVisit(visitUuid).then(() => {});
+                  }
+                }
+              return response;
+            });
           }
           const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
             medicationDispensePayload,
