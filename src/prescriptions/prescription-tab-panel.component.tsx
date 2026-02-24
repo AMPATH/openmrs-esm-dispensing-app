@@ -33,11 +33,20 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   // set any initially selected locations
   useEffect(() => {
     if (!isInitialized.current && !isLocationsLoading && sessionLocation?.uuid) {
-      setFilterLocations(
-        locations?.filter((l) => {
-          return sessionLocation?.uuid === l.associatedPharmacyLocation;
-        }) || [],
-      );
+      const initialLocations: SimpleLocation[] = [];
+
+      // Should display from current location
+      if (config.locationBehavior.locationFilter.useCurrentLocation) {
+        initialLocations.push(...(locations?.filter((l) => l.id === sessionLocation?.uuid) || []));
+      }
+
+      setFilterLocations(initialLocations || []);
+
+      // setFilterLocations(
+      //   locations?.filter((l) => {
+      //     return sessionLocation?.uuid === l.associatedPharmacyLocation;
+      //   }) || [],
+      // );
       isInitialized.current = true; // we only want to run when the component is first mounted so we don't override user changes
     }
   }, [isLocationsLoading, sessionLocation, locations]);

@@ -101,6 +101,16 @@ export const configSchema = {
           "Name of the location attribute whose value identifies the associated pharmacy location. The location whose attribute value matches the user's login location will be pre-selected in the filter dropdown. This attribute has no effect on which locations appear as options.",
         _default: 'Associated Pharmacy Location',
       },
+      useAssociatedPharmacyLocations: {
+        _type: Type.Boolean,
+        _description: 'Show medication requests from all associated pharmacy locations of the current location',
+        _default: false,
+      },
+      useCurrentLocation: {
+        _type: Type.Boolean,
+        _description: 'Show medication requests from current location',
+        _default: false,
+      },
     },
     restrictToVisitLocationDescendants: {
       _type: Type.Boolean,
@@ -210,6 +220,8 @@ export interface PharmacyConfig {
       enabled: boolean;
       tag: string;
       associatedPharmacyLocationAttribute: string;
+      useAssociatedPharmacyLocations: boolean;
+      useCurrentLocation: boolean;
     };
     restrictToVisitLocationDescendants: boolean;
   };
