@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Layer, StructuredListBody, StructuredListCell, StructuredListRow, StructuredListWrapper } from '@carbon/react';
 import { formatDate, parseDate, useSession } from '@openmrs/esm-framework';
-import { type DosageInstruction, type MedicationRequestBundle, type Quantity } from '../types';
+import { type DosageInstruction, type MedicationRequestBundle, type Quantity, MedicationRequestStatus } from '../types';
 import {
   getDosageInstruction,
   getMedicationDisplay,
@@ -62,10 +62,13 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ excludedP
             </StructuredListCell>
           </StructuredListRow>
           {filteredRequests.map((request) => {
-            const medicationEvent = request.request;
+            const medicationEvent =
+              request.request.status === MedicationRequestStatus.completed
+                ? request.dispenses.find((b) => b.quantity.code === request.request.dispenseRequest.quantity.code)
+                : request.request;
             const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
             const quantity: Quantity = getQuantity(medicationEvent);
-            const numberOfRefillsAllowed: number = getRefillsAllowed(medicationEvent);
+            const numberOfRefillsAllowed: number = getRefillsAllowed(request.request);
 
             return (
               <div key={request.request.id}>

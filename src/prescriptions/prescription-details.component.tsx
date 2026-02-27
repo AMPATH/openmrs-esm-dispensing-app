@@ -5,7 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
 import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay, useStaleEncounterUuids } from '../utils';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
-import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
+import {
+  type AllergyIntolerance,
+  type MedicationRequest,
+  MedicationRequestCombinedStatus,
+  MedicationRequestStatus,
+} from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import ActionButtons from '../components/action-buttons.component';
@@ -124,21 +129,27 @@ const PrescriptionDetails: React.FC<{
       )}
       {medicationRequestBundles &&
         (medicationRequestBundles.length > 0 ? (
-          medicationRequestBundles.map((bundle) => (
-            <MedicationEvent
-              key={bundle.request.id}
-              medicationEvent={bundle.request}
-              status={generateStatusTag(bundle.request)}>
-              <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
-                <ActionButtons
-                  patientUuid={patientUuid}
-                  encounterUuid={encounterUuid}
-                  medicationRequestBundle={bundle}
-                  disabled={staleEncounterUuids.includes(encounterUuid)}
-                />
-              </UserHasAccess>
-            </MedicationEvent>
-          ))
+          medicationRequestBundles.map((bundle) => {
+            const medicationEvent =
+              bundle.request.status === MedicationRequestStatus.completed
+                ? bundle.dispenses.find((b) => b.quantity.code === bundle.request.dispenseRequest.quantity.code)
+                : bundle.request;
+            return (
+              <MedicationEvent
+                key={bundle.request.id}
+                medicationEvent={medicationEvent}
+                status={generateStatusTag(bundle.request)}>
+                <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
+                  <ActionButtons
+                    patientUuid={patientUuid}
+                    encounterUuid={encounterUuid}
+                    medicationRequestBundle={bundle}
+                    disabled={staleEncounterUuids.includes(encounterUuid)}
+                  />
+                </UserHasAccess>
+              </MedicationEvent>
+            );
+          })
         ) : (
           <p className={styles.emptyState}>{t('noPrescriptionsFound', 'No prescriptions found')}</p>
         ))}
