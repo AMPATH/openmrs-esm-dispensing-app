@@ -2,7 +2,7 @@ import { restBaseUrl, openmrsFetch } from '@openmrs/esm-framework';
 
 export const endVisit = async (visitUuid: string) => {
   const url = `${restBaseUrl}/visit/${visitUuid}`;
-  const stopDatetime = new Date().toISOString();
+  const stopDatetime = new Date();
   const body = {
     stopDatetime,
   };
