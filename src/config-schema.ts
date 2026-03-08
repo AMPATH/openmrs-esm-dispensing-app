@@ -156,6 +156,11 @@ export const configSchema = {
     _description: 'Custom tabs to be added to the prescription panel. See README for more details.',
     _default: [],
   },
+  pharmacyServiceTypedUuid: {
+    _type: Type.UUID,
+    _default: '3adeb9de-5545-2572-add4-a661005f727r',
+    _description: 'Pharmacy billable service type',
+  },
 };
 
 export interface PharmacyConfig {
@@ -207,4 +212,5 @@ export interface PharmacyConfig {
   validateBatch: boolean;
   leftNavMode: 'normal' | 'collapsed' | 'hidden';
   customTabs: Array<CustomTab>;
+  pharmacyServiceTypedUuid: string;
 }

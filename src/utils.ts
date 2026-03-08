@@ -16,7 +16,7 @@ import {
   MedicationRequestStatus,
   type Quantity,
 } from './types';
-import { createGlobalStore, fhirBaseUrl, parseDate, useStore } from '@openmrs/esm-framework';
+import { createGlobalStore, fhirBaseUrl, getConfig, parseDate, useStore } from '@openmrs/esm-framework';
 import {
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
@@ -634,4 +634,33 @@ const dispensingStore = createGlobalStore<DispensingStore>('dispensing-store', {
 
 export function useStaleEncounterUuids() {
   return useStore(dispensingStore);
+}
+
+export async function getHieBaseUrl() {
+  const { hieBaseUrl } = await getConfig('@ampath/esm-dha-workflow-app');
+  return hieBaseUrl ?? null;
+}
+
+export async function postJson<T>(url: string, payload: unknown = null, method: string = 'POST'): Promise<T> {
+  const request = {
+    method: method,
+    headers: { 'Content-Type': 'application/json' },
+  };
+
+  if (payload) {
+    request['body'] = JSON.stringify(payload);
+  }
+
+  const response = await fetch(url, request);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Request failed with ${response.status}: ${errorText}`);
+  }
+
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return Promise.resolve({} as T);
+  }
+
+  return response.json() as Promise<T>;
 }

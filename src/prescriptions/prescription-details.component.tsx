@@ -12,11 +12,16 @@ import {
   MedicationRequestStatus,
 } from '../types';
 import { type PharmacyConfig } from '../config-schema';
-import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
+import {
+  useOrders,
+  usePatientAllergies,
+  usePrescriptionDetails,
+} from '../medication-request/medication-request.resource';
 import ActionButtons from '../components/action-buttons.component';
 import MedicationEvent from '../components/medication-event.component';
 import PrescriptionsActionsFooter from './prescription-actions.component';
 import styles from './prescription-details.scss';
+import { useBills, useInvalidateBills } from '../bill/bill.resource';
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -32,6 +37,14 @@ const PrescriptionDetails: React.FC<{
   } = usePatientAllergies(patientUuid, config.refreshInterval);
   const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
   const { staleEncounterUuids } = useStaleEncounterUuids();
+  const { orders, isLoading: isLoadingOrders } = useOrders(encounterUuid);
+  const { bills, isLoading: loadingBills } = useBills(patientUuid);
+
+  const invalidateBills = useInvalidateBills(patientUuid);
+
+  const mutated = () => {
+    invalidateBills();
+  };
 
   const generateStatusTag = (medicationRequest: MedicationRequest): React.ReactNode => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
@@ -145,6 +158,11 @@ const PrescriptionDetails: React.FC<{
                     encounterUuid={encounterUuid}
                     medicationRequestBundle={bundle}
                     disabled={staleEncounterUuids.includes(encounterUuid)}
+                    orders={orders}
+                    bills={bills}
+                    isLoading={loadingBills}
+                    isLoadingOrders={isLoadingOrders}
+                    mutated={mutated}
                   />
                 </UserHasAccess>
               </MedicationEvent>

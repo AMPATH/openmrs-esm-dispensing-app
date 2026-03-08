@@ -46,6 +46,7 @@ const pharmacyConfig: PharmacyConfig = {
   validateBatch: false,
   leftNavMode: 'collapsed',
   customTabs: [],
+  pharmacyServiceTypedUuid: '',
 };
 
 describe('Location Resource tests', () => {

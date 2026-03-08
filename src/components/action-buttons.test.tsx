@@ -1,8 +1,14 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { useConfig, ExtensionSlot } from '@openmrs/esm-framework';
+import { useConfig, ExtensionSlot, type Order } from '@openmrs/esm-framework';
 import { computeMedicationRequestStatus, getMostRecentMedicationDispenseStatus } from '../utils';
-import { MedicationDispenseStatus, type MedicationRequest, MedicationRequestStatus } from '../types';
+import {
+  type BillInvoice,
+  type BillStatus,
+  MedicationDispenseStatus,
+  type MedicationRequest,
+  MedicationRequestStatus,
+} from '../types';
 import ActionButtons from './action-buttons.component';
 import CloseActionButton from './prescription-actions/close-action-button.component';
 import DispenseActionButton from './prescription-actions/dispense-action-button.component';
@@ -111,6 +117,10 @@ const medicationRequest: MedicationRequest = {
 const medicationRequestStatus = computeMedicationRequestStatus(medicationRequest, 90);
 const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus([]);
 
+const orders = [] as Order[];
+const bills = [] as BillInvoice[];
+const mutated = () => {};
+
 const prescriptionActionsState = {
   dispensable:
     medicationRequestStatus === MedicationRequestStatus.active &&
@@ -125,6 +135,7 @@ const prescriptionActionsState = {
   session: undefined,
   providers: [],
   disabled: false,
+  billStatus: 'PAID' as BillStatus,
 };
 
 describe('Action Buttons Component tests', () => {
@@ -162,6 +173,10 @@ describe('Action Buttons Component tests', () => {
         encounterUuid={mockEncounterUuid}
         medicationRequestBundle={{ request: medicationRequest, dispenses: [] }}
         disabled={false}
+        orders={orders}
+        bills={bills}
+        mutated={mutated}
+        isLoading={false}
       />,
     );
     expect(getByText('Dispense')).toBeInTheDocument();
@@ -209,6 +224,10 @@ describe('Action Buttons Component tests', () => {
         encounterUuid={mockEncounterUuid}
         medicationRequestBundle={{ request: expiredMedicationRequest, dispenses: [] }}
         disabled={false}
+        orders={orders}
+        bills={bills}
+        mutated={mutated}
+        isLoading={false}
       />,
     );
 
