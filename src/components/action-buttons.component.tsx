@@ -1,6 +1,12 @@
-import React from 'react';
-import { ExtensionSlot, useConfig, useSession } from '@openmrs/esm-framework';
-import { MedicationDispenseStatus, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ExtensionSlot, type Order, useConfig, useSession } from '@openmrs/esm-framework';
+import {
+  type BillInvoice,
+  type BillStatus,
+  MedicationDispenseStatus,
+  type MedicationRequestBundle,
+  MedicationRequestStatus,
+} from '../types';
 import {
   computeMedicationRequestStatus,
   computeQuantityRemaining,
@@ -10,12 +16,18 @@ import {
 import { type PharmacyConfig } from '../config-schema';
 import { useProviders } from '../medication-dispense/medication-dispense.resource';
 import styles from './action-buttons.scss';
+import { getOrderNumberFromHie } from '../bill/bill.resource';
 
 interface ActionButtonsProps {
   medicationRequestBundle: MedicationRequestBundle;
   patientUuid: string;
   encounterUuid: string;
   disabled: boolean;
+  orders: Order[];
+  bills: BillInvoice[];
+  isLoading: boolean;
+  isLoadingOrders?: boolean;
+  mutated: () => void;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -23,10 +35,45 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   patientUuid,
   encounterUuid,
   disabled,
+  orders,
+  bills,
+  isLoading,
+  isLoadingOrders,
+  mutated,
 }) => {
+  const [status, setStatus] = useState<BillStatus>('BLANK');
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const providers = useProviders(config.dispenserProviderRoles);
+  const order = useMemo(() => {
+    const medicationReference = medicationRequestBundle.request.medicationReference.reference;
+    if (!isLoadingOrders) {
+      return orders.find((o) => medicationReference.includes(o?.drug?.uuid));
+    }
+    return {} as Order;
+  }, [orders, medicationRequestBundle, isLoadingOrders]);
+
+  useEffect(() => {
+    const getBillStatus = async () => {
+      try {
+        const response = await getOrderNumberFromHie(order?.orderNumber);
+        const billUuid = response.bill_uuid;
+        const bill = bills.find((b) => b.uuid === billUuid);
+        if (bill) {
+          setStatus(bill.status as BillStatus);
+        } else {
+          setStatus('BLANK');
+        }
+      } catch (error) {
+        setStatus('BLANK');
+      }
+    };
+
+    if (!isLoadingOrders && order) {
+      getBillStatus();
+    }
+  }, [order, bills, isLoadingOrders]);
+
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
     medicationRequestBundle.dispenses,
   );
@@ -71,6 +118,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     session,
     providers,
     disabled,
+    order,
+    billStatus: status,
+    isLoading: isLoading,
+    mutated,
   };
 
   return (

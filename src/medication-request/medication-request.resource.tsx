@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
-import { fhirBaseUrl, openmrsFetch, parseDate } from '@openmrs/esm-framework';
+import { fhirBaseUrl, openmrsFetch, type Order, parseDate, restBaseUrl } from '@openmrs/esm-framework';
 import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 import {
   type AllergyIntoleranceResponse,
@@ -254,4 +254,25 @@ export function updateMedicationRequestFulfillerStatus(
       ],
     },
   });
+}
+
+export function useOrders(encounterUuid: string) {
+  // const customRepresentation = `custom:(uuid,display,orders:(uuid,orderNumber,concept:(uuid,display)))`;
+  const customRepresentation = `full`;
+  const url = `${restBaseUrl}/encounter/${encounterUuid}?v=${customRepresentation}`;
+  const { data, error, mutate, isLoading, isValidating } = useSWR<{
+    data: {
+      orders: Array<Order>;
+    };
+  }>(`${url}`, openmrsFetch);
+
+  const orders = data?.data?.orders;
+
+  return {
+    orders: orders ?? [],
+    isLoading,
+    isError: error,
+    mutate,
+    isValidating,
+  };
 }

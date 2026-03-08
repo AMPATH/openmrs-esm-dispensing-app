@@ -528,3 +528,23 @@ export interface DispensingStore {
    */
   staleEncounterUuids: string[];
 }
+
+export type BillStatus = 'BLANK' | 'PENDING' | 'PAID';
+
+export interface LineItem {
+  uuid: string;
+  billableService: string;
+  quantity: string;
+  price: string;
+  item: string;
+  priceUuid: string;
+  priceName: string;
+}
+export interface BillInvoice {
+  uuid: string;
+  patient: {
+    uuid: string;
+  };
+  lineItems: LineItem[];
+  status: string;
+}
