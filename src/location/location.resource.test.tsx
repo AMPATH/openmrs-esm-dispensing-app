@@ -57,6 +57,7 @@ const pharmacyConfig: PharmacyConfig = {
   leftNavMode: 'collapsed',
   customTabs: [],
   duplicateCheckWindowDays: 0,
+  pharmacyServiceTypedUuid: '',
 };
 
 describe('useLocations', () => {
