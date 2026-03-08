@@ -1,7 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { useConfig } from '@openmrs/esm-framework';
-import { usePrescriptionDetails, usePatientAllergies } from '../medication-request/medication-request.resource';
+import {
+  usePrescriptionDetails,
+  usePatientAllergies,
+  useOrders,
+} from '../medication-request/medication-request.resource';
 import { useStaleEncounterUuids } from '../utils';
 import PrescriptionDetails from './prescription-details.component';
 
@@ -15,6 +19,7 @@ const mockUseConfig = jest.mocked(useConfig);
 const mockUsePrescriptionDetails = jest.mocked(usePrescriptionDetails);
 const mockUsePatientAllergies = jest.mocked(usePatientAllergies);
 const mockUseStaleEncounterUuids = jest.mocked(useStaleEncounterUuids);
+const mockUseOrders = jest.mocked(useOrders);
 
 const mockEncounterUuid = 'test-encounter-uuid';
 const mockPatientUuid = 'test-patient-uuid';
@@ -51,6 +56,14 @@ describe('PrescriptionDetails', () => {
         isValidating: false,
       });
 
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
+
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
       // While loading allergies, should not show allergy details or no allergies message
@@ -73,6 +86,13 @@ describe('PrescriptionDetails', () => {
         mutate: jest.fn(),
         isValidating: false,
       });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
@@ -93,6 +113,13 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         mutate: jest.fn(),
         isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -130,6 +157,13 @@ describe('PrescriptionDetails', () => {
         mutate: jest.fn(),
         isValidating: false,
       });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
@@ -164,6 +198,13 @@ describe('PrescriptionDetails', () => {
         mutate: jest.fn(),
         isValidating: false,
       });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
@@ -193,6 +234,13 @@ describe('PrescriptionDetails', () => {
         mutate: jest.fn(),
         isValidating: false,
       });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
@@ -216,6 +264,13 @@ describe('PrescriptionDetails', () => {
         mutate: jest.fn(),
         isValidating: false,
       });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
@@ -237,6 +292,13 @@ describe('PrescriptionDetails', () => {
         mutate: jest.fn(),
         isValidating: false,
       });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
@@ -257,6 +319,13 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         mutate: jest.fn(),
         isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
