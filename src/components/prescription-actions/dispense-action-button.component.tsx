@@ -28,7 +28,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   quantityRemaining,
   quantityDispensed,
   disabled,
-  billStatus,
+  billStatus = 'PAID',
 }) => {
   const { t } = useTranslation();
   const dispenseWorkspaceProps = {
