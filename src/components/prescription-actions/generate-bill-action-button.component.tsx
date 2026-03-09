@@ -10,6 +10,7 @@ type GenerateBillActionButtonProps = {
   isLoading: boolean;
   billStatus: BillStatus;
   order: Order;
+  dispensable: boolean;
   mutated: () => void;
 };
 
@@ -18,6 +19,7 @@ const GenerateBillActionButton: React.FC<GenerateBillActionButtonProps> = ({
   isLoading,
   billStatus,
   order,
+  dispensable,
   mutated,
 }) => {
   const { t } = useTranslation();
@@ -32,6 +34,10 @@ const GenerateBillActionButton: React.FC<GenerateBillActionButtonProps> = ({
       mutated,
     });
   };
+
+  if (!dispensable) {
+    return null;
+  }
 
   return isLoading ? (
     <InlineLoading description="Checking bills" />
