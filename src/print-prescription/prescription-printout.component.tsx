@@ -64,7 +64,11 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ excludedP
           {filteredRequests.map((request) => {
             const medicationEvent =
               request.request.status === MedicationRequestStatus.completed
-                ? request.dispenses.find((b) => b.quantity.code === request.request.dispenseRequest.quantity.code)
+                ? request.dispenses.find(
+                    (b) =>
+                      b.quantity.code === request.request.dispenseRequest.quantity.code ||
+                      b.medicationReference.reference === request.request.medicationReference.reference,
+                  )
                 : request.request;
             const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
             const quantity: Quantity = getQuantity(medicationEvent);
