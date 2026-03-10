@@ -145,7 +145,11 @@ const PrescriptionDetails: React.FC<{
           medicationRequestBundles.map((bundle) => {
             const medicationEvent =
               bundle.request.status === MedicationRequestStatus.completed
-                ? bundle.dispenses.find((b) => b.quantity.code === bundle.request.dispenseRequest.quantity.code)
+                ? bundle.dispenses.find(
+                    (b) =>
+                      b.quantity.code === bundle.request.dispenseRequest.quantity.code ||
+                      b.medicationReference.reference === bundle.request.medicationReference.reference,
+                  )
                 : bundle.request;
             return (
               <MedicationEvent
