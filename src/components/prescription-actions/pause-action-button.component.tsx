@@ -13,6 +13,7 @@ type PauseActionButtonProps = {
   providers: Array<Provider>;
   pauseable: boolean;
   disabled: boolean;
+  hasActiveRequests: boolean;
 };
 
 const PauseActionButton: React.FC<PauseActionButtonProps> = ({
@@ -23,6 +24,7 @@ const PauseActionButton: React.FC<PauseActionButtonProps> = ({
   providers,
   pauseable,
   disabled,
+  hasActiveRequests,
 }) => {
   const { t } = useTranslation();
   const pauseWorkspaceProps = {
@@ -30,6 +32,7 @@ const PauseActionButton: React.FC<PauseActionButtonProps> = ({
     encounterUuid,
     medicationDispense: initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, false),
     mode: 'enter',
+    hasActiveRequests,
   };
 
   const handleLaunchWorkspace = () => {
