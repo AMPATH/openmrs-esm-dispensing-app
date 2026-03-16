@@ -8,6 +8,7 @@ import {
   showSnackbar,
   useConfig,
   usePatient,
+  useVisit,
   Workspace2,
   type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
@@ -17,6 +18,7 @@ import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFul
 import { type PharmacyConfig } from '../config-schema';
 import { getUuidFromReference, markEncounterAsStale, revalidate } from '../utils';
 import styles from './forms.scss';
+import { endVisit } from '../visit/visit.resource';
 
 type CloseDispenseFormProps = {
   medicationDispense: MedicationDispense;
@@ -24,15 +26,17 @@ type CloseDispenseFormProps = {
   patientUuid?: string;
   encounterUuid: string;
   customWorkspaceTitle?: string;
+  hasActiveRequests: boolean;
 };
 
 const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormProps, {}, {}>> = ({
-  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid, customWorkspaceTitle },
+  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid, customWorkspaceTitle, hasActiveRequests },
   closeWorkspace,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const { patient, isLoading } = usePatient(patientUuid);
+  const { activeVisit } = useVisit(patientUuid);
 
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
@@ -92,6 +96,14 @@ const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormPro
                 mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
               ),
             });
+            if (!hasActiveRequests) {
+              if (config.dispenseBehavior.endActiveVisitOnCompletingOrder) {
+                if (activeVisit) {
+                  const visitUuid = activeVisit?.uuid;
+                  endVisit(visitUuid).then(() => {});
+                }
+              }
+            }
             closeWorkspace({ discardUnsavedChanges: true });
           }
         })

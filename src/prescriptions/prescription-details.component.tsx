@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
@@ -45,6 +45,13 @@ const PrescriptionDetails: React.FC<{
   const { staleEncounterUuids } = useStaleEncounterUuids();
   const { orders, isLoading: isLoadingOrders } = useOrders(encounterUuid);
   const { bills, isLoading: loadingBills } = useBills(patientUuid);
+  const hasActiveRequests = useMemo(() => {
+    return medicationRequestBundles.some(
+      (bundle) =>
+        computeMedicationRequestCombinedStatus(bundle.request, config.medicationRequestExpirationPeriodInDays) ===
+        MedicationRequestCombinedStatus.active,
+    );
+  }, [medicationRequestBundles, config]);
 
   const invalidateBills = useInvalidateBills(patientUuid);
 
@@ -179,6 +186,7 @@ const PrescriptionDetails: React.FC<{
                     bills={bills}
                     isLoading={loadingBills}
                     isLoadingOrders={isLoadingOrders}
+                    hasActiveRequests={hasActiveRequests}
                     mutated={mutated}
                   />
                 </UserHasAccess>

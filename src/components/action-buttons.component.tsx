@@ -27,6 +27,7 @@ interface ActionButtonsProps {
   bills: BillInvoice[];
   isLoading: boolean;
   isLoadingOrders?: boolean;
+  hasActiveRequests?: boolean;
   mutated: () => void;
 }
 
@@ -39,6 +40,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   bills,
   isLoading,
   isLoadingOrders,
+  hasActiveRequests,
   mutated,
 }) => {
   const [status, setStatus] = useState<BillStatus>('BLANK');
@@ -121,6 +123,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     order,
     billStatus: status,
     isLoading: isLoading,
+    hasActiveRequests,
     mutated,
   };
 

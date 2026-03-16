@@ -13,6 +13,7 @@ type CloseActionButtonProps = {
   providers: Array<Provider>;
   closeable: boolean;
   disabled: boolean;
+  hasActiveRequests: boolean;
 };
 
 const CloseActionButton: React.FC<CloseActionButtonProps> = ({
@@ -23,6 +24,7 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
   providers,
   closeable,
   disabled,
+  hasActiveRequests,
 }) => {
   const { t } = useTranslation();
 
@@ -31,6 +33,7 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
     encounterUuid,
     medicationDispense: initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, false),
     mode: 'enter',
+    hasActiveRequests,
   };
 
   const handleLaunchWorkspace = () => {

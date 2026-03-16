@@ -8,6 +8,7 @@ import {
   showSnackbar,
   useConfig,
   usePatient,
+  useVisit,
   Workspace2,
   type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
@@ -17,6 +18,7 @@ import { getUuidFromReference, markEncounterAsStale, revalidate } from '../utils
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import styles from './forms.scss';
+import { endVisit } from '../visit/visit.resource';
 
 type PauseDispenseFormProps = {
   medicationDispense: MedicationDispense;
@@ -24,15 +26,17 @@ type PauseDispenseFormProps = {
   patientUuid?: string;
   encounterUuid: string;
   customWorkspaceTitle?: string;
+  hasActiveRequests: boolean;
 };
 
 const PauseDispenseForm: React.FC<Workspace2DefinitionProps<PauseDispenseFormProps, {}, {}>> = ({
-  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid, customWorkspaceTitle },
+  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid, customWorkspaceTitle, hasActiveRequests },
   closeWorkspace,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const { patient, isLoading } = usePatient(patientUuid);
+  const { activeVisit } = useVisit(patientUuid);
 
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
@@ -92,6 +96,14 @@ const PauseDispenseForm: React.FC<Workspace2DefinitionProps<PauseDispenseFormPro
                 mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',
               ),
             });
+            if (!hasActiveRequests) {
+              if (config.dispenseBehavior.endActiveVisitOnCompletingOrder) {
+                if (activeVisit) {
+                  const visitUuid = activeVisit?.uuid;
+                  endVisit(visitUuid).then(() => {});
+                }
+              }
+            }
             closeWorkspace({ discardUnsavedChanges: true });
           }
         })
