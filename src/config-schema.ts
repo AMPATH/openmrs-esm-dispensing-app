@@ -158,7 +158,7 @@ export const configSchema = {
   },
   pharmacyServiceTypedUuid: {
     _type: Type.UUID,
-    _default: '3adeb9de-5545-2572-add4-a661005f727r',
+    _default: '3adgb9de-5545-2572-add4-a661005f727r',
     _description: 'Pharmacy billable service type',
   },
 };
