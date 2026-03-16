@@ -136,6 +136,7 @@ const prescriptionActionsState = {
   providers: [],
   disabled: false,
   billStatus: 'PAID' as BillStatus,
+  hasActiveRequests: true,
 };
 
 describe('Action Buttons Component tests', () => {
