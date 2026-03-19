@@ -49,7 +49,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
     return null;
   }
 
-  return billStatus === 'PAID' ? (
+  return billStatus === 'PAID' || billStatus === 'POSTED' ? (
     <Button kind="primary" onClick={handleLaunchWorkspace} disabled={disabled}>
       {t('dispense', 'Dispense')}
     </Button>
