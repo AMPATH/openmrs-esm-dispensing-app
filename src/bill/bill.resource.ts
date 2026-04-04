@@ -5,7 +5,7 @@ import { getHieBaseUrl, postJson } from '../utils';
 import { useCallback } from 'react';
 
 export const useBills = (patientUuid: string = '', billStatus: string = 'PENDING') => {
-  const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&v=custom:(uuid,patient:(uuid),lineItems:(uuid,billableService,quantity,price,item,priceUuid,priceName),status)`;
+  const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&v=custom:(uuid,patient:(uuid),lineItems:(uuid,billableService,quantity,price,item,priceUuid,priceName,paymentStatus),status)`;
 
   const {
     data,
@@ -41,5 +41,5 @@ export function useInvalidateBills(patientUuid: string) {
 export const getOrderNumberFromHie = async (orderNumber: string) => {
   const hieBaseUrl = await getHieBaseUrl();
   const url = `${hieBaseUrl}/bill-order?order_no=${orderNumber}`;
-  return postJson<{ bill_uuid: string }>(url, null, 'GET');
+  return postJson<{ bill_uuid: string; line_item_uuid: string }>(url, null, 'GET');
 };
