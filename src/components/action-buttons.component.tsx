@@ -61,8 +61,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         const response = await getOrderNumberFromHie(order?.orderNumber);
         const billUuid = response.bill_uuid;
         const bill = bills.find((b) => b.uuid === billUuid);
-        if (bill) {
-          setStatus(bill.status as BillStatus);
+        const lineItem = bill?.lineItems?.find((i) => i.uuid === response?.line_item_uuid);
+        if (lineItem) {
+          if (lineItem.priceName === 'SHA') {
+            setStatus('PAID');
+          } else {
+            setStatus(lineItem?.paymentStatus as BillStatus);
+          }
         } else {
           setStatus('BLANK');
         }
