@@ -1,9 +1,10 @@
 import React from 'react';
-import { Button } from '@carbon/react';
+import { Button, Tag } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { launchWorkspace2, type Session } from '@openmrs/esm-framework';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
 import { type Provider, type MedicationRequestBundle, type BillStatus } from '../../types';
+import { usePatientBills } from '../../bill/bill.resource';
 
 type DispenseActionButtonProps = {
   patientUuid: string;
@@ -41,12 +42,22 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
     mode: 'enter',
   };
 
+  const { currentDayBills } = usePatientBills(patientUuid);
+
   const handleLaunchWorkspace = () => {
     launchWorkspace2('dispense-workspace', dispenseWorkspaceProps);
   };
 
   if (!dispensable) {
     return null;
+  }
+
+  if (currentDayBills && currentDayBills.length && (billStatus === 'PAID' || billStatus === 'POSTED')) {
+    return (
+      <Tag type="red" size="lg">
+        {t('clearPendingBills', 'Clear pending bills to dispense')}
+      </Tag>
+    );
   }
 
   return billStatus === 'PAID' || billStatus === 'POSTED' ? (
