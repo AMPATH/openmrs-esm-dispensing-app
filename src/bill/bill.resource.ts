@@ -1,8 +1,9 @@
-import { openmrsFetch, restBaseUrl } from '@openmrs/esm-framework';
+import { openmrsFetch, type OpenmrsResource, restBaseUrl } from '@openmrs/esm-framework';
 import useSWR, { mutate } from 'swr';
 import { type BillInvoice } from '../types';
 import { getHieBaseUrl, postJson } from '../utils';
 import { useCallback } from 'react';
+import dayjs from 'dayjs';
 
 export const useBills = (patientUuid: string = '', billStatus: string = 'PENDING') => {
   const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&v=custom:(uuid,patient:(uuid),lineItems:(uuid,billableService,quantity,price,item,priceUuid,priceName,paymentStatus),status)`;
@@ -42,4 +43,35 @@ export const getOrderNumberFromHie = async (orderNumber: string) => {
   const hieBaseUrl = await getHieBaseUrl();
   const url = `${hieBaseUrl}/bill-order?order_no=${orderNumber}`;
   return postJson<{ bill_uuid: string; line_item_uuid: string }>(url, null, 'GET');
+};
+
+export const usePatientBills = (patientUuid: string, billStatus: string = 'PENDING,POSTED') => {
+  const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&status=${billStatus}&v=custom:(uuid,lineItems,dateCreated)`;
+
+  const {
+    data,
+    error,
+    isLoading,
+    isValidating,
+    mutate: mutated,
+  } = useSWR<{ data: { results: Array<OpenmrsResource> } }>(url, openmrsFetch, {
+    errorRetryCount: 2,
+  });
+
+  const results = data?.data?.results ?? [];
+
+  const today = dayjs().startOf('day');
+
+  const currentDayBills = results.filter((bill) => {
+    const billDate = dayjs(bill?.dateCreated).startOf('day');
+    return billDate.isSame(today);
+  });
+
+  return {
+    currentDayBills,
+    error,
+    isLoading,
+    isValidating,
+    mutated,
+  };
 };

@@ -96,12 +96,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     config.actionButtons.pauseButton.enabled &&
     medicationRequestStatus === MedicationRequestStatus.active &&
     mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.on_hold &&
-    mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.declined;
+    mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.declined &&
+    status === 'BLANK';
 
   const closeable =
     config.actionButtons.closeButton.enabled &&
     medicationRequestStatus === MedicationRequestStatus.active &&
-    mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.declined;
+    mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.declined &&
+    status === 'BLANK';
 
   let quantityRemaining = null;
   if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
