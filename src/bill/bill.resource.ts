@@ -75,3 +75,19 @@ export const usePatientBills = (patientUuid: string, billStatus: string = 'PENDI
     mutated,
   };
 };
+
+export const getOdooBills = async (patientUuid: string) => {
+  let hieBaseUrl = await getHieBaseUrl();
+  if (!hieBaseUrl) {
+    hieBaseUrl = `/openmrs/etl/`;
+  }
+  const url = `${hieBaseUrl}/odoo/billing/patient/${patientUuid}`;
+  return postJson<{
+    orders: Array<{
+      order_lines: Array<{
+        billing_status: string;
+        openmrs_order_id: string;
+      }>;
+    }>;
+  }>(url, null, 'GET');
+};
