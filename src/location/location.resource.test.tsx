@@ -58,6 +58,7 @@ const pharmacyConfig: PharmacyConfig = {
   customTabs: [],
   duplicateCheckWindowDays: 0,
   pharmacyServiceTypedUuid: '',
+  enableOdooBilling: false,
 };
 
 describe('useLocations', () => {

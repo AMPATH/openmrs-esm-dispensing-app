@@ -16,7 +16,8 @@ import {
 import { type PharmacyConfig } from '../config-schema';
 import { useProviders } from '../medication-dispense/medication-dispense.resource';
 import styles from './action-buttons.scss';
-import { getOrderNumberFromHie } from '../bill/bill.resource';
+import { getOdooBills, getOrderNumberFromHie } from '../bill/bill.resource';
+import { InlineLoading } from '@carbon/react';
 
 interface ActionButtonsProps {
   medicationRequestBundle: MedicationRequestBundle;
@@ -44,6 +45,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   mutated,
 }) => {
   const [status, setStatus] = useState<BillStatus>('BLANK');
+  const [isLoadingOdooBills, setIsLoadingOdooBills] = useState(false);
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const providers = useProviders(config.dispenserProviderRoles);
@@ -76,10 +78,35 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       }
     };
 
-    if (!isLoadingOrders && order) {
-      getBillStatus();
+    const odooBills = async () => {
+      try {
+        setIsLoadingOdooBills(true);
+        const results = await getOdooBills(order?.patient?.uuid);
+        if (results.orders && results.orders[0].order_lines && results.orders[0].order_lines.length) {
+          const currentOrder = results.orders[0].order_lines.find((o) => o.openmrs_order_id === order?.uuid);
+          if (currentOrder) {
+            if (currentOrder.billing_status.toUpperCase() === 'PAID') {
+              setStatus('PAID');
+            } else {
+              setStatus('PENDING');
+            }
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoadingOdooBills(false);
+      }
+    };
+
+    if (config.enableOdooBilling) {
+      odooBills();
+    } else {
+      if (order?.orderNumber) {
+        getBillStatus();
+      }
     }
-  }, [order, bills, isLoadingOrders]);
+  }, [order, bills, isLoadingOrders, config.enableOdooBilling]);
 
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
     medicationRequestBundle.dispenses,
@@ -133,6 +160,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     hasActiveRequests,
     mutated,
   };
+
+  if (isLoadingOdooBills) {
+    return <InlineLoading />;
+  }
 
   return (
     <div className={styles.actionBtns}>
