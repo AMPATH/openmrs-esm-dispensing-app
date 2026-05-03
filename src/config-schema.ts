@@ -161,6 +161,11 @@ export const configSchema = {
     _default: '3adgb9de-5545-2572-add4-a661005f727r',
     _description: 'Pharmacy billable service type',
   },
+  enableOdooBilling: {
+    _type: Type.Boolean,
+    _default: false,
+    _description: 'Enable Odoo billing',
+  },
 };
 
 export interface PharmacyConfig {
@@ -213,4 +218,5 @@ export interface PharmacyConfig {
   leftNavMode: 'normal' | 'collapsed' | 'hidden';
   customTabs: Array<CustomTab>;
   pharmacyServiceTypedUuid: string;
+  enableOdooBilling: boolean;
 }
