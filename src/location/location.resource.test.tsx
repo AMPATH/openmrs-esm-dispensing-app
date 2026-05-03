@@ -47,6 +47,7 @@ const pharmacyConfig: PharmacyConfig = {
   leftNavMode: 'collapsed',
   customTabs: [],
   pharmacyServiceTypedUuid: '',
+  enableOdooBilling: false,
 };
 
 describe('Location Resource tests', () => {
