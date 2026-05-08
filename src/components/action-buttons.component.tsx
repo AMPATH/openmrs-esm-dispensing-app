@@ -65,7 +65,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         const bill = bills.find((b) => b.uuid === billUuid);
         const lineItem = bill?.lineItems?.find((i) => i.uuid === response?.line_item_uuid);
         if (lineItem) {
-          if (lineItem.priceName === 'SHA') {
+          if (!config.blockedPaymentModes.includes(lineItem.priceName.toUpperCase())) {
             setStatus('PAID');
           } else {
             setStatus(lineItem?.paymentStatus as BillStatus);
@@ -106,7 +106,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         getBillStatus();
       }
     }
-  }, [order, bills, isLoadingOrders, config.enableOdooBilling]);
+  }, [order, bills, isLoadingOrders, config.enableOdooBilling, config.blockedPaymentModes]);
 
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
     medicationRequestBundle.dispenses,
