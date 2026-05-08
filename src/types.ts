@@ -448,6 +448,7 @@ export interface PrescriptionsTableRow {
   lastDispenser: string;
   status: string;
   location: string;
+  priority: string;
 }
 
 export interface Quantity {
@@ -555,3 +556,33 @@ export interface BillInvoice {
   lineItems: LineItem[];
   status: string;
 }
+
+export type QueueEntryResult = {
+  name: string;
+  queue_entry_id: number;
+  priority_comment: string;
+  wait_time_in_min: number;
+  service_uuid: string;
+  location_id: number;
+  location: string;
+  service: number;
+  queue_id: number;
+  queue_room: string;
+  priority: string;
+  patient_id: number;
+  visit_id: number;
+  patient_uuid: string;
+  family_name: string;
+  given_name: string;
+  middle_name: string;
+  status: string;
+  visit_uuid: string;
+  queue_coming_from: string;
+  bill_status: string;
+  bill_item_payment_status: string;
+  price_name: string;
+  cash_unpaid_client: string;
+  hide_in_queue: number;
+  identifiers: string;
+  phone_number: string;
+};

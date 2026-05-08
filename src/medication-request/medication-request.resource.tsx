@@ -1,7 +1,15 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
-import { fhirBaseUrl, openmrsFetch, type Order, parseDate, restBaseUrl } from '@openmrs/esm-framework';
+import {
+  fhirBaseUrl,
+  openmrsFetch,
+  type Order,
+  parseDate,
+  restBaseUrl,
+  useConfig,
+  useSession,
+} from '@openmrs/esm-framework';
 import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 import {
   type AllergyIntoleranceResponse,
@@ -14,6 +22,7 @@ import {
   type MedicationRequestFulfillerStatus,
   type MedicationRequestBundle,
   type SimpleLocation,
+  type QueueEntryResult,
 } from '../types';
 import {
   getPrescriptionDetailsEndpoint,
@@ -23,7 +32,9 @@ import {
   sortMedicationDispensesByWhenHandedOver,
   computePrescriptionStatusMessageCode,
   getAssociatedMedicationDispenses,
+  getEtlBaseUrl,
 } from '../utils';
+import { type PharmacyConfig } from '../config-schema';
 
 export function usePrescriptionsTable(
   loadData: boolean,
@@ -51,6 +62,7 @@ export function usePrescriptionsTable(
     openmrsFetch,
     { refreshInterval: refreshInterval },
   );
+  const { queueEntries } = useQueueEntries();
 
   let prescriptionsTableRows: PrescriptionsTableRow[];
   if (data) {
@@ -77,11 +89,16 @@ export function usePrescriptionsTable(
         const medicationDispensesForMedicationRequests = medicationDispenses.filter((medicationDispense) =>
           medicationRequestReferences.includes(medicationDispense.authorizingPrescription[0]?.reference),
         );
+
+        const patientUuid = encounter?.subject?.reference?.split('/')[1];
+        const priority = queueEntries?.find((q) => q.patient_uuid === patientUuid)?.priority ?? 'NON-URGENT';
+
         return buildPrescriptionsTableRow(
           encounter,
           medicationRequestsForEncounter,
           medicationDispensesForMedicationRequests,
           medicationRequestExpirationPeriodInDays,
+          priority,
         );
       });
       prescriptionsTableRows.sort((a, b) => (a.created < b.created ? 1 : -1));
@@ -103,6 +120,7 @@ function buildPrescriptionsTableRow(
   medicationRequests: Array<MedicationRequest>,
   medicationDispense: Array<MedicationDispense>,
   medicationRequestExpirationPeriodInDays: number,
+  priority: string,
 ): PrescriptionsTableRow {
   return {
     id: encounter?.id,
@@ -125,6 +143,7 @@ function buildPrescriptionsTableRow(
     prescriber: [...new Set(medicationRequests.map((o) => o.requester.display))].join(', '),
     status: computePrescriptionStatusMessageCode(medicationRequests, medicationRequestExpirationPeriodInDays),
     location: encounter?.location ? encounter?.location[0]?.location.display : null,
+    priority: priority,
   };
 }
 
@@ -271,6 +290,39 @@ export function useOrders(encounterUuid: string) {
 
   return {
     orders: orders ?? [],
+    isLoading,
+    isError: error,
+    mutate,
+    isValidating,
+  };
+}
+
+export function useQueueEntries(patientUuid: string = '') {
+  const [etlBaseUrl, setEtlBaseUrl] = useState('');
+  const { sessionLocation } = useSession();
+  const { serviceUuid } = useConfig<PharmacyConfig>();
+
+  useEffect(() => {
+    const fetchEtlBaseUrl = async () => {
+      const baseUrl = await getEtlBaseUrl();
+      setEtlBaseUrl(baseUrl);
+    };
+    fetchEtlBaseUrl();
+  }, []);
+
+  const url = `${etlBaseUrl}/queue-entry?locationUuid=${sessionLocation?.uuid}&serviceUuid=${serviceUuid}`;
+  const { data, error, mutate, isLoading, isValidating } = useSWR<{
+    data: { data: Array<QueueEntryResult> };
+  }>(etlBaseUrl ? `${url}` : null, openmrsFetch);
+
+  let filteredQueueEntries = data?.data?.data;
+
+  if (patientUuid) {
+    filteredQueueEntries = filteredQueueEntries?.filter((queueEntry) => queueEntry.patient_uuid === patientUuid);
+  }
+
+  return {
+    queueEntries: filteredQueueEntries ?? [],
     isLoading,
     isError: error,
     mutate,
