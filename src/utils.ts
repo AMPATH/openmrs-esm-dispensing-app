@@ -641,6 +641,11 @@ export async function getHieBaseUrl() {
   return hieBaseUrl ?? null;
 }
 
+export async function getEtlBaseUrl() {
+  const { etlBaseUrl } = await getConfig('@ampath/esm-dha-workflow-app');
+  return etlBaseUrl ?? null;
+}
+
 export async function postJson<T>(url: string, payload: unknown = null, method: string = 'POST'): Promise<T> {
   const request = {
     method: method,

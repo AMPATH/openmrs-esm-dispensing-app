@@ -24,6 +24,7 @@ import { type SimpleLocation } from '../types';
 import PatientInfoCell from '../patient/patient-info-cell.component';
 import PrescriptionExpanded from './prescription-expanded.component';
 import styles from './prescriptions.scss';
+import PriorityTag from './priority-tag.component';
 
 interface PrescriptionsTableProps {
   loadData: boolean;
@@ -76,6 +77,7 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
     { header: t('prescriber', 'Prescriber'), key: 'prescriber' },
     { header: t('drugs', 'Drugs'), key: 'drugs' },
     { header: t('lastDispenser', 'Last dispenser'), key: 'lastDispenser' },
+    { header: t('priority', 'Priority'), key: 'priority' },
     { header: t('status', 'Status'), key: 'status' },
   ];
 
@@ -117,19 +119,28 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
                     {rows.map((row) => (
                       <React.Fragment key={row.id}>
                         <TableExpandRow {...getRowProps({ row })}>
-                          {row.cells.map((cell) => (
-                            <TableCell key={cell.id}>
-                              {cell.id.endsWith('created') ? (
-                                formatDatetime(parseDate(cell.value))
-                              ) : cell.id.endsWith('patient') ? (
-                                <PatientInfoCell patient={cell.value} />
-                              ) : cell.id.endsWith('status') ? (
-                                t(cell.value)
-                              ) : (
-                                cell.value
-                              )}
-                            </TableCell>
-                          ))}
+                          {row.cells.map((cell) => {
+                            if (cell.info.header === 'priority') {
+                              return (
+                                <TableCell key={cell.id}>
+                                  <PriorityTag status={cell.value?.content ?? cell.value} />
+                                </TableCell>
+                              );
+                            }
+                            return (
+                              <TableCell key={cell.id}>
+                                {cell.id.endsWith('created') ? (
+                                  formatDatetime(parseDate(cell.value))
+                                ) : cell.id.endsWith('patient') ? (
+                                  <PatientInfoCell patient={cell.value} />
+                                ) : cell.id.endsWith('status') ? (
+                                  t(cell.value)
+                                ) : (
+                                  cell.value
+                                )}
+                              </TableCell>
+                            );
+                          })}
                         </TableExpandRow>
                         {row.isExpanded ? (
                           <TableExpandedRow colSpan={headers.length + 1}>
