@@ -59,6 +59,8 @@ const pharmacyConfig: PharmacyConfig = {
   duplicateCheckWindowDays: 0,
   pharmacyServiceTypedUuid: '',
   enableOdooBilling: false,
+  serviceUuid: '',
+  blockedPaymentModes: [],
 };
 
 describe('useLocations', () => {
