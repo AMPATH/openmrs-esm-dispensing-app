@@ -24,15 +24,12 @@ vi.mock('react', async (importOriginal) => {
 });
 
 describe('Medication Request Resource Test', () => {
-  test('usePrescriptionsTable should call active endpoint and proper date based on expiration period if status parameter is active', () => {
+  test('usePrescriptionsTable should call active endpoint with a large fetch count and no page offset when status parameter is active', () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: 'mockedReturnData' } }));
     usePrescriptionsTable(true, '', 'ACTIVE', 5, 5, 'bob', null, 10, 10000);
     expect(useSWR).toHaveBeenCalledWith(
-      `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=5&_count=5&date=ge${dayjs()
-        .startOf('day')
-        .subtract(10, 'day')
-        .toISOString()}&status=ACTIVE&patientSearchTerm=bob`,
+      `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=0&_count=200&status=ACTIVE&patientSearchTerm=bob`,
       openmrsFetch,
       { refreshInterval: 10000 },
     );
