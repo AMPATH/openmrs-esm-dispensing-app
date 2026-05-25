@@ -69,6 +69,14 @@ describe('PrescriptionDetails', () => {
         mutate: vi.fn(),
       });
 
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
+
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
       // While loading allergies, should not show allergy details or no allergies message
@@ -97,6 +105,13 @@ describe('PrescriptionDetails', () => {
         isValidating: false,
         isError: undefined,
         mutate: vi.fn(),
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -276,6 +291,13 @@ describe('PrescriptionDetails', () => {
         isError: undefined,
         mutate: vi.fn(),
       });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
@@ -304,6 +326,13 @@ describe('PrescriptionDetails', () => {
         isError: undefined,
         mutate: vi.fn(),
       });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
+      });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
@@ -331,6 +360,13 @@ describe('PrescriptionDetails', () => {
         isValidating: false,
         isError: undefined,
         mutate: vi.fn(),
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: jest.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);

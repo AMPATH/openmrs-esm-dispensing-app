@@ -17,7 +17,7 @@ import {
   Tile,
 } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
+import { formatDatetime, parseDate, useConfig, usePagination } from '@openmrs/esm-framework';
 import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
 import { type PharmacyConfig } from '../config-schema';
 import { type SimpleLocation } from '../types';
@@ -58,10 +58,20 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
     config.refreshInterval,
   );
 
+  const isActiveClientPaged = status === 'ACTIVE';
+  const { results: paginatedRows, currentPage, goTo } = usePagination(prescriptionsTableRows ?? [], pageSize);
+  const rowsToDisplay = isActiveClientPaged ? paginatedRows : prescriptionsTableRows;
+  const paginationPage = isActiveClientPaged ? currentPage : page;
+  const paginationTotalItems = isActiveClientPaged ? prescriptionsTableRows?.length ?? 0 : totalOrders;
+
   // reset back to page 1 whenever search term changes
   useEffect(() => {
-    setPage(1);
-  }, [debouncedSearchTerm]);
+    if (isActiveClientPaged) {
+      goTo(1);
+    } else {
+      setPage(1);
+    }
+  }, [debouncedSearchTerm, isActiveClientPaged, goTo]);
 
   // dynamic status keys we need to maintain
   // t('active', 'Active')
@@ -104,7 +114,7 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
       )}
       {prescriptionsTableRows && (
         <>
-          <DataTable rows={prescriptionsTableRows} headers={columns} isSortable>
+          <DataTable rows={rowsToDisplay} headers={columns} isSortable>
             {({ rows, headers, getExpandHeaderProps, getHeaderProps, getRowProps, getTableProps }) => (
               <TableContainer>
                 <Table {...getTableProps()} useZebraStyles>
@@ -177,17 +187,26 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
           {prescriptionsTableRows?.length > 0 && (
             <div className={styles.paginationContainer}>
               <Pagination
-                page={page}
+                page={paginationPage}
                 pageSize={pageSize}
                 pageSizes={[10, 20, 30, 40, 50, 100]}
-                totalItems={totalOrders}
+                totalItems={paginationTotalItems}
                 onChange={({ page: newPage, pageSize: newPageSize }) => {
-                  if (newPageSize !== pageSize) {
-                    setPage(1);
+                  if (isActiveClientPaged) {
+                    if (newPageSize !== pageSize) {
+                      setPageSize(newPageSize);
+                      goTo(1);
+                    } else {
+                      goTo(newPage);
+                    }
                   } else {
-                    setPage(newPage);
+                    if (newPageSize !== pageSize) {
+                      setPage(1);
+                    } else {
+                      setPage(newPage);
+                    }
+                    setPageSize(newPageSize);
                   }
-                  setPageSize(newPageSize);
                 }}
               />
             </div>
