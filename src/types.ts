@@ -468,7 +468,7 @@ export interface Reference {
 export interface SimpleLocation {
   id: string;
   name: string;
-  associatedPharmacyLocations?: Array<string>;
+  associatedPharmacyLocation?: Array<string>;
 }
 
 export interface ValueSet {
