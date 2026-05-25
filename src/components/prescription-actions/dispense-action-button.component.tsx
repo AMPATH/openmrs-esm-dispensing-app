@@ -53,16 +53,11 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   }
 
   if (currentDayBills && currentDayBills.length && (billStatus === 'PAID' || billStatus === 'POSTED')) {
-    const lineItemsStatus = currentDayBills
-      ?.map((bill) => bill?.lineItems.map((lineItem) => lineItem?.paymentStatus))
-      .flatMap((v) => v);
-    if (lineItemsStatus && lineItemsStatus.includes('PENDING')) {
-      return (
-        <Tag type="red" size="lg">
-          {t('clearPendingBills', 'Clear pending bills to dispense')}
-        </Tag>
-      );
-    }
+    return (
+      <Tag type="red" size="lg">
+        {t('clearPendingBills', 'Clear pending bills to dispense')}
+      </Tag>
+    );
   }
 
   return billStatus === 'PAID' || billStatus === 'POSTED' ? (
