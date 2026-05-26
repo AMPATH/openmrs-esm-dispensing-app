@@ -36,7 +36,7 @@ import {
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 
-const ACTIVE_STATUS_FETCH_COUNT = 200;
+const ACTIVE_STATUS_FETCH_COUNT = 100;
 
 export function usePrescriptionsTable(
   loadData: boolean,
