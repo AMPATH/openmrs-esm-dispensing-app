@@ -121,6 +121,12 @@ export interface DosageInstruction {
   text?: string;
   timing: {
     repeat?: {
+      boundsDuration?: {
+        value?: number;
+        unit?: string;
+        system?: string;
+        code?: string;
+      };
       duration: number;
       durationUnit: string;
     };
@@ -462,7 +468,7 @@ export interface Reference {
 export interface SimpleLocation {
   id: string;
   name: string;
-  associatedPharmacyLocations?: Array<string>;
+  associatedPharmacyLocation?: Array<string>;
 }
 
 export interface ValueSet {

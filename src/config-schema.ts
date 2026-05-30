@@ -2,9 +2,25 @@ import { Type, validators } from '@openmrs/esm-framework';
 import { type CustomTab } from './types';
 
 export const configSchema = {
+  drugOrderTypeUUID: {
+    _type: Type.UUID,
+    _description:
+      "UUID for the 'Drug' order type, used to filter the order basket to show only drug order panels. Must match the orderTypeUuid config in @openmrs/esm-patient-medications-app.",
+    _default: '131168f4-15f5-102d-96e4-000c29c2a5d7',
+  },
   appName: {
     _type: Type.String,
     _default: 'Pharmacy',
+  },
+  enableDuplicateDispenseCheck: {
+    _type: Type.Boolean,
+    _description: 'Enable/Disable the duplicate dispense check feature',
+    _default: true,
+  },
+  duplicateCheckWindowDays: {
+    _type: Type.Number,
+    _description: 'Number of days to look back when checking for duplicate dispenses',
+    _default: 7,
   },
   actionButtons: {
     pauseButton: {
@@ -18,6 +34,13 @@ export const configSchema = {
       enabled: {
         _type: Type.Boolean,
         _description: 'Enabled/Disable including a Close button in the button action bar',
+        _default: true,
+      },
+    },
+    printPrescriptionsButton: {
+      enabled: {
+        _type: Type.Boolean,
+        _description: 'Enabled/Disable including a Print Prescriptions button in the prescriptions action bar',
         _default: true,
       },
     },
@@ -69,15 +92,16 @@ export const configSchema = {
       },
       tag: {
         _type: Type.String,
-        _description: 'Name of the location tag to use when fetching locations to populate filter',
+        _description: 'Only locations with this tag will appear as options in the location dropdown filter',
         _default: 'Login Location',
       },
       associatedPharmacyLocationAttribute: {
         _type: Type.String,
-        _description: 'Name of the attribute used to associate locations with a pharmacy location',
+        _description:
+          "Name of the location attribute whose value identifies the associated pharmacy location. The location whose attribute value matches the user's login location will be pre-selected in the filter dropdown. This attribute has no effect on which locations appear as options.",
         _default: 'Associated Pharmacy Location',
       },
-      useAssociatedPharmacyLocations: {
+      useAssociatedPharmacyLocation: {
         _type: Type.Boolean,
         _description: 'Show medication requests from all associated pharmacy locations of the current location',
         _default: false,
@@ -87,6 +111,12 @@ export const configSchema = {
         _description: 'Show medication requests from current location',
         _default: false,
       },
+    },
+    restrictToVisitLocationDescendants: {
+      _type: Type.Boolean,
+      _description:
+        "If true, limits prescriptions shown to locations that are descendants of the current login location's nearest ancestor tagged as a visit location. Requires the EMR API module to be installed.",
+      _default: false,
     },
   },
   refreshInterval: {
@@ -179,12 +209,18 @@ export const configSchema = {
 };
 
 export interface PharmacyConfig {
+  drugOrderTypeUUID: string;
+  enableDuplicateDispenseCheck: boolean;
+  duplicateCheckWindowDays: number;
   appName: string;
   actionButtons: {
     pauseButton: {
       enabled: boolean;
     };
     closeButton: {
+      enabled: boolean;
+    };
+    printPrescriptionsButton: {
       enabled: boolean;
     };
   };
@@ -204,9 +240,10 @@ export interface PharmacyConfig {
       enabled: boolean;
       tag: string;
       associatedPharmacyLocationAttribute: string;
-      useAssociatedPharmacyLocations: boolean;
+      useAssociatedPharmacyLocation: boolean;
       useCurrentLocation: boolean;
     };
+    restrictToVisitLocationDescendants: boolean;
   };
   valueSets: {
     reasonForPause: {
