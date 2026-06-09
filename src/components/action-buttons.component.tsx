@@ -16,7 +16,7 @@ import {
 import { type PharmacyConfig } from '../config-schema';
 import { useProviders } from '../medication-dispense/medication-dispense.resource';
 import styles from './action-buttons.scss';
-import { getOdooBills, getOrderNumberFromHie } from '../bill/bill.resource';
+import { useOdooBills, useOrderBill } from '../bill/bill.resource';
 import { InlineLoading } from '@carbon/react';
 
 interface ActionButtonsProps {
@@ -45,7 +45,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   mutated,
 }) => {
   const [status, setStatus] = useState<BillStatus>('BLANK');
-  const [isLoadingOdooBills, setIsLoadingOdooBills] = useState(false);
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const providers = useProviders(config.dispenserProviderRoles);
@@ -57,13 +56,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     return {} as Order;
   }, [orders, medicationRequestBundle, isLoadingOrders]);
 
+  const { orderBill, isLoadingOrderBill } = useOrderBill(order?.orderNumber);
+  const { odooBills, isLoadingOdooBills } = useOdooBills(order?.patient?.uuid, config.enableOdooBilling);
+
   useEffect(() => {
-    const getBillStatus = async () => {
-      try {
-        const response = await getOrderNumberFromHie(order?.orderNumber);
-        const billUuid = response.bill_uuid;
+    if (!config.enableOdooBilling) {
+      if (!isLoading && !isLoadingOrderBill && orderBill) {
+        const billUuid = orderBill?.bill_uuid;
+        const lineItemUuid = orderBill?.line_item_uuid;
         const bill = bills.find((b) => b.uuid === billUuid);
-        const lineItem = bill?.lineItems?.find((i) => i.uuid === response?.line_item_uuid);
+        const lineItem = bill?.lineItems?.find((i) => i.uuid === lineItemUuid);
         if (lineItem) {
           if (!config.blockedPaymentModes.includes(lineItem.priceName.toUpperCase())) {
             setStatus('PAID');
@@ -73,40 +75,29 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         } else {
           setStatus('BLANK');
         }
-      } catch (error) {
-        setStatus('BLANK');
       }
-    };
-
-    const odooBills = async () => {
-      try {
-        setIsLoadingOdooBills(true);
-        const results = await getOdooBills(order?.patient?.uuid);
-        if (results.orders && results.orders[0].order_lines && results.orders[0].order_lines.length) {
-          const currentOrder = results.orders[0].order_lines.find((o) => o.openmrs_order_id === order?.uuid);
-          if (currentOrder) {
-            if (currentOrder.billing_status.toUpperCase() === 'PAID') {
-              setStatus('PAID');
-            } else {
-              setStatus('PENDING');
-            }
+    } else {
+      if (odooBills && odooBills.orders && odooBills.orders[0].order_lines && odooBills.orders[0].order_lines.length) {
+        const currentOrder = odooBills.orders[0].order_lines.find((o) => o.openmrs_order_id === order?.uuid);
+        if (currentOrder) {
+          if (currentOrder.billing_status.toUpperCase() === 'PAID') {
+            setStatus('PAID');
+          } else {
+            setStatus('PENDING');
           }
         }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoadingOdooBills(false);
-      }
-    };
-
-    if (config.enableOdooBilling) {
-      odooBills();
-    } else {
-      if (order?.orderNumber) {
-        getBillStatus();
       }
     }
-  }, [order, bills, isLoadingOrders, config.enableOdooBilling, config.blockedPaymentModes]);
+  }, [
+    order,
+    isLoading,
+    bills,
+    odooBills,
+    orderBill,
+    isLoadingOrderBill,
+    config.blockedPaymentModes,
+    config.enableOdooBilling,
+  ]);
 
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
     medicationRequestBundle.dispenses,
@@ -161,7 +152,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     mutated,
   };
 
-  if (isLoadingOdooBills) {
+  if (isLoadingOdooBills || isLoading || isLoadingOrderBill) {
     return <InlineLoading />;
   }
 

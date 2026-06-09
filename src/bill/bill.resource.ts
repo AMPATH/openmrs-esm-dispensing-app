@@ -1,7 +1,6 @@
-import { openmrsFetch, type OpenmrsResource, restBaseUrl } from '@openmrs/esm-framework';
+import { openmrsFetch, type OpenmrsResource, restBaseUrl, useConfig } from '@openmrs/esm-framework';
 import useSWR, { mutate } from 'swr';
 import { type BillInvoice } from '../types';
-import { getHieBaseUrl, postJson } from '../utils';
 import { useCallback } from 'react';
 import dayjs from 'dayjs';
 
@@ -39,12 +38,6 @@ export function useInvalidateBills(patientUuid: string) {
   }, [patientUuid]);
 }
 
-export const getOrderNumberFromHie = async (orderNumber: string) => {
-  const hieBaseUrl = await getHieBaseUrl();
-  const url = `${hieBaseUrl}/bill-order?order_no=${orderNumber}`;
-  return postJson<{ bill_uuid: string; line_item_uuid: string }>(url, null, 'GET');
-};
-
 export const usePatientBills = (patientUuid: string, billStatus: string = 'PENDING,POSTED') => {
   const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&status=${billStatus}&v=custom:(uuid,lineItems,dateCreated)`;
 
@@ -76,14 +69,50 @@ export const usePatientBills = (patientUuid: string, billStatus: string = 'PENDI
   };
 };
 
-export const getOdooBills = async (patientUuid: string) => {
-  const url = `/openmrs/etl/odoo/billing/patient/${patientUuid}`;
-  return postJson<{
-    orders: Array<{
-      order_lines: Array<{
-        billing_status: string;
-        openmrs_order_id: string;
+export const useOrderBill = (orderNumber: string) => {
+  const { hieBaseUrl } = useConfig({
+    externalModuleName: '@ampath/esm-dha-workflow-app',
+  });
+  const url = `${hieBaseUrl}/bill-order?order_no=${orderNumber}`;
+
+  const {
+    data,
+    error,
+    isLoading,
+    isValidating,
+    mutate: mutated,
+  } = useSWR<{ data: { bill_uuid: string; line_item_uuid: string } }>(url, openmrsFetch);
+
+  const results = data?.data;
+
+  return {
+    orderBill: results,
+    error,
+    isLoadingOrderBill: isLoading,
+    isValidating,
+    mutated,
+  };
+};
+
+export const useOdooBills = (patientUuid: string, enableOdooBilling: boolean = false) => {
+  const url = enableOdooBilling ? `etl/odoo/billing/patient/${patientUuid}` : null;
+
+  const { data, error, isLoading } = useSWR<{
+    data: {
+      orders: Array<{
+        order_lines: Array<{
+          billing_status: string;
+          openmrs_order_id: string;
+        }>;
       }>;
-    }>;
-  }>(url, null, 'GET');
+    };
+  }>(url, openmrsFetch);
+
+  const results = data?.data;
+
+  return {
+    odooBills: results,
+    error,
+    isLoadingOdooBills: isLoading,
+  };
 };
