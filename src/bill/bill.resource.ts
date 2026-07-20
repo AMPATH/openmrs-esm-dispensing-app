@@ -5,7 +5,7 @@ import { useCallback } from 'react';
 import dayjs from 'dayjs';
 
 export const useBills = (patientUuid: string = '', billStatus: string = 'PENDING') => {
-  const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&v=custom:(uuid,patient:(uuid),lineItems:(uuid,billableService,quantity,price,item,priceUuid,priceName,paymentStatus),status)`;
+  const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&v=custom:(uuid,patient:(uuid),lineItems:(uuid,billableService,quantity,price,item,priceUuid,priceName,status),status)`;
 
   const {
     data,
