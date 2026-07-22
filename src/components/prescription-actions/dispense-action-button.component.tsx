@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Tag } from '@carbon/react';
+import { Button } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { launchWorkspace2, type Session } from '@openmrs/esm-framework';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
@@ -52,13 +52,13 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
     return null;
   }
 
-  if (currentDayBills && currentDayBills.length && (billStatus === 'PAID' || billStatus === 'POSTED')) {
-    return (
-      <Tag type="red" size="lg">
-        {t('clearPendingBills', 'Clear pending bills to dispense')}
-      </Tag>
-    );
-  }
+  // if (currentDayBills && currentDayBills.length && (billStatus === 'PAID' || billStatus === 'POSTED')) {
+  //   return (
+  //     <Tag type="red" size="lg">
+  //       {t('clearPendingBills', 'Clear pending bills to dispense')}
+  //     </Tag>
+  //   );
+  // }
 
   return billStatus === 'PAID' || billStatus === 'POSTED' ? (
     <Button kind="primary" onClick={handleLaunchWorkspace} disabled={disabled}>
