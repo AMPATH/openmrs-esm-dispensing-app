@@ -50,6 +50,7 @@ const pharmacyConfig: PharmacyConfig = {
   enableOdooBilling: false,
   serviceUuid: '',
   blockedPaymentModes: [],
+  patientIdIdentifierTypeUuid: [],
 };
 
 describe('Location Resource tests', () => {
