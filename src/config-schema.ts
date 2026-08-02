@@ -206,6 +206,11 @@ export const configSchema = {
     _default: '2d4472e2-d7ab-4430-8e0e-a9ffcd809bf4',
     _description: 'Service Uuid for filtering queues',
   },
+  patientIdIdentifierTypeUuid: {
+    _type: Type.Array,
+    _default: ['e88dc246-3614-4ee3-8141-1f2a83054e72', '58a47054-1359-11df-a1f1-0026b9348838'],
+    _description: 'Filtered identifiers',
+  },
 };
 
 export interface PharmacyConfig {
@@ -268,4 +273,5 @@ export interface PharmacyConfig {
   enableOdooBilling: boolean;
   blockedPaymentModes: Array<string>;
   serviceUuid: string;
+  patientIdIdentifierTypeUuid: Array<string>;
 }

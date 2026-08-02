@@ -64,6 +64,15 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
   const paginationPage = isActiveClientPaged ? currentPage : page;
   const paginationTotalItems = isActiveClientPaged ? prescriptionsTableRows?.length ?? 0 : totalOrders;
 
+  const [identifiersByPatientUuid, setIdentifiersByPatientUuid] = useState<Record<string, string>>({});
+
+  const setIdentifiers = (patientUuid: string, identifierValue: string) => {
+    setIdentifiersByPatientUuid((prev) => ({
+      ...prev,
+      [patientUuid]: identifierValue,
+    }));
+  };
+
   // reset back to page 1 whenever search term changes
   useEffect(() => {
     if (isActiveClientPaged) {
@@ -85,6 +94,7 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
   let columns = [
     { header: t('created', 'Created'), key: 'created' },
     { header: t('patientName', 'Patient name'), key: 'patient' },
+    { header: t('patientIdentifiers', 'Patient identifiers'), key: 'identifiers' },
     { header: t('prescriber', 'Prescriber'), key: 'prescriber' },
     { header: t('drugs', 'Drugs'), key: 'drugs' },
     { header: t('lastDispenser', 'Last dispenser'), key: 'lastDispenser' },
@@ -143,7 +153,16 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
                                 {cell.id.endsWith('created') ? (
                                   formatDatetime(parseDate(cell.value))
                                 ) : cell.id.endsWith('patient') ? (
-                                  <PatientInfoCell patient={cell.value} />
+                                  <PatientInfoCell
+                                    patient={cell.value}
+                                    setIdentifiers={(identifierValue) =>
+                                      setIdentifiers(cell.value.uuid, identifierValue)
+                                    }
+                                  />
+                                ) : cell.id.endsWith('identifiers') ? (
+                                  identifiersByPatientUuid[
+                                    row.cells.find((c) => c.id.endsWith('patient'))?.value?.uuid
+                                  ] || ''
                                 ) : cell.id.endsWith('status') ? (
                                   t(cell.value)
                                 ) : (
