@@ -31,6 +31,7 @@ const GenerateBillActionButton: React.FC<GenerateBillActionButtonProps> = ({
       order: order,
       quantity: medicationRequestBundle.request.dispenseRequest.quantity.value,
       serviceTypeUuid: pharmacyServiceTypedUuid,
+      servicePointName: "PHARMACY",
       mutated,
     });
   };
