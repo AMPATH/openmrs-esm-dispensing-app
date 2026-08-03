@@ -1,7 +1,6 @@
 import React from 'react';
-import { Button, InlineLoading } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { launchWorkspace, type Order, useConfig } from '@openmrs/esm-framework';
+import { ExtensionSlot, launchWorkspace, type Order, useConfig } from '@openmrs/esm-framework';
 import { type MedicationRequestBundle, type BillStatus } from '../../types';
 import { type PharmacyConfig } from '../../config-schema';
 
@@ -31,7 +30,7 @@ const GenerateBillActionButton: React.FC<GenerateBillActionButtonProps> = ({
       order: order,
       quantity: medicationRequestBundle.request.dispenseRequest.quantity.value,
       serviceTypeUuid: pharmacyServiceTypedUuid,
-      servicePointName: "PHARMACY",
+      servicePointName: 'PHARMACY',
       mutated,
     });
   };
@@ -40,15 +39,12 @@ const GenerateBillActionButton: React.FC<GenerateBillActionButtonProps> = ({
     return null;
   }
 
-  return isLoading ? (
-    <InlineLoading description="Checking bills" />
-  ) : billStatus === 'PENDING' ? (
-    <Button kind="secondary">{t('pendingPayment', 'Pending payment')}</Button>
-  ) : billStatus === 'BLANK' ? (
-    <Button kind="primary" onClick={launchBillWorkspace}>
-      {t('generateBill', 'Generate bill')}
-    </Button>
-  ) : null;
+  return (
+    <ExtensionSlot
+      state={{ order, billStatus, isLoading, launchBillWorkspace }}
+      name="generate-order-bill-button-slot"
+    />
+  );
 };
 
 export default GenerateBillActionButton;
