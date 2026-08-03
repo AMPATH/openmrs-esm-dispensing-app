@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
-import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import { type PatientUuid, useConfig, UserHasAccess, useVisit } from '@openmrs/esm-framework';
 import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay, useStaleEncounterUuids } from '../utils';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
 import {
@@ -21,7 +21,7 @@ import ActionButtons from '../components/action-buttons.component';
 import MedicationEvent from '../components/medication-event.component';
 import PrescriptionsActionsFooter from './prescription-actions.component';
 import styles from './prescription-details.scss';
-import { useBills, useInvalidateBills } from '../bill/bill.resource';
+import { useBills, useInvalidateBills, usePreauthPreview } from '../bill/bill.resource';
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -39,6 +39,17 @@ const PrescriptionDetails: React.FC<{
   const { staleEncounterUuids } = useStaleEncounterUuids();
   const { orders, isLoading: isLoadingOrders } = useOrders(encounterUuid);
   const { bills, isLoading: loadingBills } = useBills(patientUuid);
+  const { activeVisit } = useVisit(patientUuid);
+  const consentToken = useMemo(() => {
+    if (activeVisit) {
+      return (
+        activeVisit?.attributes?.find((atr) => atr?.attributeType?.uuid === '4962a633-c4f8-474c-857c-5c68c72fbbe3')
+          ?.value ?? ''
+      );
+    }
+    return '';
+  }, [activeVisit]);
+  const { isLoading: isLoadingPreauthRequests, preauthRequests } = usePreauthPreview(consentToken);
   const hasActiveRequests = useMemo(() => {
     return medicationRequestBundles.some(
       (bundle) =>
@@ -175,6 +186,8 @@ const PrescriptionDetails: React.FC<{
                     isLoadingOrders={isLoadingOrders}
                     hasActiveRequests={hasActiveRequests}
                     mutated={mutated}
+                    preauthRequests={preauthRequests}
+                    isLoadingPreauthRequests={isLoadingPreauthRequests}
                   />
                 </UserHasAccess>
               </MedicationEvent>

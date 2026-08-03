@@ -18,6 +18,7 @@ import { useProviders } from '../medication-dispense/medication-dispense.resourc
 import styles from './action-buttons.scss';
 import { useOdooBills, useOrderBill } from '../bill/bill.resource';
 import { InlineLoading } from '@carbon/react';
+import { type PreauthRequest } from '../bill/bill.types';
 
 interface ActionButtonsProps {
   medicationRequestBundle: MedicationRequestBundle;
@@ -30,6 +31,8 @@ interface ActionButtonsProps {
   isLoadingOrders?: boolean;
   hasActiveRequests?: boolean;
   mutated: () => void;
+  preauthRequests: PreauthRequest[];
+  isLoadingPreauthRequests: boolean;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -43,6 +46,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   isLoadingOrders,
   hasActiveRequests,
   mutated,
+  preauthRequests,
+  isLoadingPreauthRequests,
 }) => {
   const [status, setStatus] = useState<BillStatus>('BLANK');
   const config = useConfig<PharmacyConfig>();
@@ -61,19 +66,29 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
   useEffect(() => {
     if (!config.enableOdooBilling) {
-      if (!isLoading && !isLoadingOrderBill && orderBill) {
-        const billUuid = orderBill?.bill_uuid;
-        const lineItemUuid = orderBill?.line_item_uuid;
-        const bill = bills.find((b) => b.uuid === billUuid);
-        const lineItem = bill?.lineItems?.find((i) => i.uuid === lineItemUuid);
-        if (lineItem) {
-          if (!config.blockedPaymentModes.includes(lineItem.priceName.toUpperCase())) {
-            setStatus('PAID');
+      if (!isLoading && !isLoadingOrderBill && !isLoadingPreauthRequests && orderBill && bills) {
+        if (!orderBill.consent_token) {
+          setStatus('AWAITING CLAIM VISIT');
+          return;
+        }
+        if (orderBill.requires_preauth) {
+          if (preauthRequests && preauthRequests.length) {
+            const intervention = preauthRequests.find((r) => r.interventionCode === orderBill.intervention_code);
+            if (intervention) {
+              if (intervention.status?.trim()?.toUpperCase() === 'ACTIVE') {
+                setStatus('PENDING PREAUTHORIZATION');
+              }
+              if (intervention.status?.trim()?.toUpperCase() === 'FINALISED') {
+                setStatus('PAID');
+              }
+            } else {
+              setStatus('NEEDS PREAUTHORIZATION');
+            }
           } else {
-            setStatus(lineItem?.status as BillStatus);
+            setStatus('NEEDS PREAUTHORIZATION');
           }
         } else {
-          setStatus('BLANK');
+          setStatus('PAID');
         }
       }
     } else {
@@ -97,6 +112,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     isLoadingOrderBill,
     config.blockedPaymentModes,
     config.enableOdooBilling,
+    preauthRequests,
+    isLoadingPreauthRequests,
   ]);
 
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
