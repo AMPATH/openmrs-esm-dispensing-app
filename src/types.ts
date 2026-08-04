@@ -543,7 +543,8 @@ export type BillStatus =
   | 'POSTED'
   | 'PENDING PREAUTHORIZATION'
   | 'NEEDS PREAUTHORIZATION'
-  | 'AWAITING CLAIM VISIT';
+  | 'AWAITING CLAIM VISIT'
+  | 'PREAUTHORIZATION REJECTED';
 
 export interface LineItem {
   uuid: string;
