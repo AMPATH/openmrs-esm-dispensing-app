@@ -67,31 +67,43 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   useEffect(() => {
     if (!config.enableOdooBilling) {
       if (!isLoading && !isLoadingOrderBill && !isLoadingPreauthRequests && orderBill && bills) {
-        if (!orderBill.consent_token) {
-          setStatus('AWAITING CLAIM VISIT');
-          return;
-        }
-        if (orderBill.requires_preauth) {
-          if (preauthRequests && preauthRequests.length) {
-            const intervention = preauthRequests.find((r) => r.interventionCode === orderBill.intervention_code);
-            if (intervention) {
-              if (intervention.status?.trim()?.toUpperCase() === 'ACTIVE') {
-                setStatus('PENDING PREAUTHORIZATION');
-              }
-              if (intervention.status?.trim()?.toUpperCase() === 'FINALISED') {
-                setStatus('PAID');
-              }
-              if (intervention.status?.trim()?.toUpperCase() === 'REJECTED') {
-                setStatus('PREAUTHORIZATION REJECTED');
+        const billUuid = orderBill?.bill_uuid;
+        const lineItemUuid = orderBill?.line_item_uuid;
+        const bill = bills.find((b) => b.uuid === billUuid);
+        const lineItem = bill?.lineItems?.find((i) => i.uuid === lineItemUuid);
+        if (lineItem) {
+          if (!config.blockedPaymentModes.includes(lineItem.priceName.toUpperCase())) {
+            if (!orderBill.consent_token) {
+              setStatus('AWAITING CLAIM VISIT');
+              return;
+            }
+            if (orderBill.requires_preauth) {
+              if (preauthRequests && preauthRequests.length) {
+                const intervention = preauthRequests.find((r) => r.interventionCode === orderBill.intervention_code);
+                if (intervention) {
+                  if (intervention.status?.trim()?.toUpperCase() === 'ACTIVE') {
+                    setStatus('PENDING PREAUTHORIZATION');
+                  }
+                  if (intervention.status?.trim()?.toUpperCase() === 'FINALISED') {
+                    setStatus('PAID');
+                  }
+                  if (intervention.status?.trim()?.toUpperCase() === 'REJECTED') {
+                    setStatus('PREAUTHORIZATION REJECTED');
+                  }
+                } else {
+                  setStatus('NEEDS PREAUTHORIZATION');
+                }
+              } else {
+                setStatus('NEEDS PREAUTHORIZATION');
               }
             } else {
-              setStatus('NEEDS PREAUTHORIZATION');
+              setStatus('PAID');
             }
           } else {
-            setStatus('NEEDS PREAUTHORIZATION');
+            setStatus(lineItem?.status as BillStatus);
           }
         } else {
-          setStatus('PAID');
+          setStatus('BLANK');
         }
       }
     } else {
