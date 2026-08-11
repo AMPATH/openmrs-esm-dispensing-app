@@ -20,11 +20,11 @@ vi.mock('../utils', async (importOriginal) => {
   };
 });
 
-const mockUseConfig = jest.mocked(useConfig);
-const mockUsePrescriptionDetails = jest.mocked(usePrescriptionDetails);
-const mockUsePatientAllergies = jest.mocked(usePatientAllergies);
-const mockUseStaleEncounterUuids = jest.mocked(useStaleEncounterUuids);
-const mockUseOrders = jest.mocked(useOrders);
+const mockUseConfig = vi.mocked(useConfig);
+const mockUsePrescriptionDetails = vi.mocked(usePrescriptionDetails);
+const mockUsePatientAllergies = vi.mocked(usePatientAllergies);
+const mockUseStaleEncounterUuids = vi.mocked(useStaleEncounterUuids);
+const mockUseOrders = vi.mocked(useOrders);
 
 const mockEncounterUuid = 'test-encounter-uuid';
 const mockPatientUuid = 'test-patient-uuid';
@@ -66,7 +66,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -96,7 +96,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -124,7 +124,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -167,7 +167,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -208,7 +208,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -244,7 +244,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -274,7 +274,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -302,7 +302,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -330,7 +330,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
