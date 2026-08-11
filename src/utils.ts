@@ -497,7 +497,7 @@ export function getPrescriptionTableEndpoint(
     customPrescriptionsTableEndpoint
       ? customPrescriptionsTableEndpoint
       : status === 'ACTIVE'
-        ? '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&status=${status}' + // &date=ge${date}
+        ? '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=${status}' +
           (patientSearchTerm ? '&patientSearchTerm=${patientSearchTerm}' : '') +
           (location ? '&location=${location}' : '')
         : '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&status=${status}' +
