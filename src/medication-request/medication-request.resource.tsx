@@ -36,8 +36,6 @@ import {
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 
-const ACTIVE_STATUS_FETCH_COUNT = 100;
-
 export function usePrescriptionsTable(
   loadData: boolean,
   customPrescriptionsTableEndpoint: string = '',
@@ -49,16 +47,14 @@ export function usePrescriptionsTable(
   medicationRequestExpirationPeriodInDays: number,
   refreshInterval: number,
 ) {
-  const fetchPageSize = status === 'ACTIVE' ? ACTIVE_STATUS_FETCH_COUNT : pageSize;
-  const fetchPageOffset = status === 'ACTIVE' ? 0 : pageOffset;
   const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
     loadData
       ? getPrescriptionTableEndpoint(
           customPrescriptionsTableEndpoint,
           status,
-          fetchPageOffset,
-          fetchPageSize,
-          '',
+          pageOffset,
+          pageSize,
+          dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString(),
           patientSearchTerm,
           locations?.map((location) => location.id).join(','),
         )
@@ -71,23 +67,14 @@ export function usePrescriptionsTable(
   let prescriptionsTableRows: PrescriptionsTableRow[];
   if (data) {
     const entries = data?.data.entry;
-    const filteredEntries =
-      status === 'ACTIVE' && entries
-        ? entries.filter((entry) =>
-            dayjs(entry?.resource?.meta?.lastUpdated).isAfter(
-              dayjs().startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day'),
-            ),
-          )
-        : entries;
-
-    if (filteredEntries) {
-      const encounters = filteredEntries
+    if (entries) {
+      const encounters = entries
         .filter((entry) => entry?.resource?.resourceType == 'Encounter')
         .map((entry) => entry.resource as Encounter);
-      const medicationRequests = filteredEntries
+      const medicationRequests = entries
         .filter((entry) => entry?.resource?.resourceType == 'MedicationRequest')
         .map((entry) => entry.resource as MedicationRequest);
-      const medicationDispenses = filteredEntries
+      const medicationDispenses = entries
         .filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
         .map((entry) => entry.resource as MedicationDispense)
         .sort(sortMedicationDispensesByWhenHandedOver);
@@ -124,7 +111,7 @@ export function usePrescriptionsTable(
     prescriptionsTableRows,
     error: error,
     isLoading: !prescriptionsTableRows && !error,
-    totalOrders: status === 'ACTIVE' ? prescriptionsTableRows?.length ?? 0 : data?.data.total,
+    totalOrders: data?.data.total,
   };
 }
 
@@ -137,7 +124,7 @@ function buildPrescriptionsTableRow(
 ): PrescriptionsTableRow {
   return {
     id: encounter?.id,
-    created: encounter?.meta?.lastUpdated, //encounter?.period?.start,
+    created: encounter?.period?.start,
     patient: {
       name: encounter?.subject?.display,
       uuid: encounter?.subject?.reference?.split('/')[1],
