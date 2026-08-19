@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { useConfig } from '@openmrs/esm-framework';
 import {
@@ -7,19 +8,23 @@ import {
   useOrders,
 } from '../medication-request/medication-request.resource';
 import { useStaleEncounterUuids } from '../utils';
+import type * as Utils from '../utils';
 import PrescriptionDetails from './prescription-details.component';
 
-jest.mock('../medication-request/medication-request.resource');
-jest.mock('../utils', () => ({
-  ...jest.requireActual('../utils'),
-  useStaleEncounterUuids: jest.fn(),
-}));
+vi.mock('../medication-request/medication-request.resource');
+vi.mock('../utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof Utils>();
+  return {
+    ...actual,
+    useStaleEncounterUuids: vi.fn(),
+  };
+});
 
-const mockUseConfig = jest.mocked(useConfig);
-const mockUsePrescriptionDetails = jest.mocked(usePrescriptionDetails);
-const mockUsePatientAllergies = jest.mocked(usePatientAllergies);
-const mockUseStaleEncounterUuids = jest.mocked(useStaleEncounterUuids);
-const mockUseOrders = jest.mocked(useOrders);
+const mockUseConfig = vi.mocked(useConfig);
+const mockUsePrescriptionDetails = vi.mocked(usePrescriptionDetails);
+const mockUsePatientAllergies = vi.mocked(usePatientAllergies);
+const mockUseStaleEncounterUuids = vi.mocked(useStaleEncounterUuids);
+const mockUseOrders = vi.mocked(useOrders);
 
 const mockEncounterUuid = 'test-encounter-uuid';
 const mockPatientUuid = 'test-patient-uuid';
@@ -52,8 +57,16 @@ describe('PrescriptionDetails', () => {
         prescriptionDate: new Date(),
         error: undefined,
         isLoading: false,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
         isValidating: false,
+      });
+
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: vi.fn(),
       });
 
       mockUseOrders.mockReturnValue({
@@ -83,8 +96,15 @@ describe('PrescriptionDetails', () => {
         prescriptionDate: new Date(),
         error: undefined,
         isLoading: false,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
         isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: vi.fn(),
       });
       mockUseOrders.mockReturnValue({
         orders: [],
@@ -111,7 +131,7 @@ describe('PrescriptionDetails', () => {
         prescriptionDate: new Date(),
         error: undefined,
         isLoading: false,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
         isValidating: false,
       });
       mockUseOrders.mockReturnValue({
@@ -119,7 +139,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -154,7 +174,7 @@ describe('PrescriptionDetails', () => {
         prescriptionDate: new Date(),
         error: undefined,
         isLoading: false,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
         isValidating: false,
       });
       mockUseOrders.mockReturnValue({
@@ -162,7 +182,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -195,7 +215,7 @@ describe('PrescriptionDetails', () => {
         prescriptionDate: new Date(),
         error: undefined,
         isLoading: false,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
         isValidating: false,
       });
       mockUseOrders.mockReturnValue({
@@ -203,7 +223,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -231,7 +251,7 @@ describe('PrescriptionDetails', () => {
         prescriptionDate: new Date(),
         error: undefined,
         isLoading: false,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
         isValidating: false,
       });
       mockUseOrders.mockReturnValue({
@@ -239,7 +259,7 @@ describe('PrescriptionDetails', () => {
         isLoading: false,
         isValidating: false,
         isError: undefined,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
       });
 
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
@@ -261,8 +281,15 @@ describe('PrescriptionDetails', () => {
         prescriptionDate: new Date(),
         error: undefined,
         isLoading: true,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
         isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: vi.fn(),
       });
       mockUseOrders.mockReturnValue({
         orders: [],
@@ -289,8 +316,15 @@ describe('PrescriptionDetails', () => {
         prescriptionDate: new Date(),
         error: new Error('Failed to load'),
         isLoading: false,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
         isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: vi.fn(),
       });
       mockUseOrders.mockReturnValue({
         orders: [],
@@ -317,8 +351,15 @@ describe('PrescriptionDetails', () => {
         prescriptionDate: new Date(),
         error: undefined,
         isLoading: false,
-        mutate: jest.fn(),
+        mutate: vi.fn(),
         isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: vi.fn(),
       });
       mockUseOrders.mockReturnValue({
         orders: [],

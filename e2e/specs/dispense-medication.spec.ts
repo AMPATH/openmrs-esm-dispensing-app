@@ -25,8 +25,15 @@ test.beforeEach(async ({ api, patient }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 });
 
+test.afterEach(async ({ api }) => {
+  await deleteEncounter(api, encounter.uuid);
+  await deleteDrugOrder(api, drugOrder.uuid);
+  await endVisit(api, visit);
+});
+
 test('Dispense prescription', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
+
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
     await expect(page).toHaveURL(process.env.E2E_BASE_URL + `/spa/dispensing`);
@@ -54,18 +61,17 @@ test('Dispense prescription', async ({ page, patient }) => {
     await dispenseButton.click();
   });
 
-  await test.step('Then I should see a success notification', async () => {
+  await test.step('Then I should see a success notification and the Dispensed status in the Prescription details', async () => {
     await expect(page.getByText(/medication successfully dispensed/i)).toBeVisible();
+    await expect(
+      page.getByLabel('Prescription details', { exact: true }).getByText('Dispensed', { exact: true }),
+    ).toBeVisible();
   });
 
   await test.step('And when I click the `History and comments` tab I should see the updated `Dispensed` status reflected', async () => {
     await page.getByRole('tab', { name: 'History and comments' }).click();
-    await expect(page.getByText('Dispensed', { exact: true })).toBeVisible();
+    await expect(
+      page.getByLabel('History and comments', { exact: true }).getByText('Dispensed', { exact: true }),
+    ).toBeVisible();
   });
-});
-
-test.afterEach(async ({ api }) => {
-  await deleteEncounter(api, encounter.uuid);
-  await deleteDrugOrder(api, drugOrder.uuid);
-  await endVisit(api, visit);
 });

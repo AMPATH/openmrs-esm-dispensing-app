@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSWRConfig } from 'swr';
 import { useTranslation } from 'react-i18next';
 import { Button, ComboBox, Form, InlineLoading } from '@carbon/react';
 import {
@@ -34,6 +35,7 @@ const PauseDispenseForm: React.FC<Workspace2DefinitionProps<PauseDispenseFormPro
   closeWorkspace,
 }) => {
   const { t } = useTranslation();
+  const { mutate } = useSWRConfig();
   const config = useConfig<PharmacyConfig>();
   const { patient, isLoading } = usePatient(patientUuid);
   const { activeVisit } = useVisit(patientUuid);
@@ -88,7 +90,7 @@ const PauseDispenseForm: React.FC<Workspace2DefinitionProps<PauseDispenseFormPro
         })
         .then((response) => {
           if (response.ok) {
-            revalidate(encounterUuid);
+            revalidate(mutate, encounterUuid);
             showSnackbar({
               kind: 'success',
               title: t(
