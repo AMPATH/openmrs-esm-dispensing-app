@@ -1,0 +1,51 @@
+name: Sync main from openmrs/main
+
+on:
+  schedule:
+    # Every 48 hours
+    - cron: "0 0 */2 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git bot identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream and fetch branches
+        run: |
+          git remote add upstream https://github.com/openmrs/openmrs-esm-dispensing-app.git || true
+          git fetch origin main
+          git fetch upstream main
+
+      - name: Prepare sync branch from upstream/main
+        run: |
+          git checkout -B sync-main upstream/main
+          git push origin sync-main --force-with-lease
+
+      - name: Create or update PR into main
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: sync-main
+          base: main
+          title: "chore(sync): update main from openmrs/main"
+          body: |
+            Automated sync PR from `openmrs/main` into `main`.
+
+            - Schedule: every 48 hours
+            - Merge strategy: manual merge by maintainers
+            - Workflow: `.github/workflows/sync-main.yml`
