@@ -1,6 +1,13 @@
 import React from 'react';
 import classNames from 'classnames';
-import { ExtensionSlot, isDesktop, useConfig, useLayoutType, useLeftNav } from '@openmrs/esm-framework';
+import {
+  ExtensionSlot,
+  isDesktop,
+  useConfig,
+  useLayoutType,
+  useLeftNav,
+  WorkspaceContainer,
+} from '@openmrs/esm-framework';
 import { type PharmacyConfig } from './config-schema';
 import styles from './dispensing.scss';
 
@@ -18,6 +25,7 @@ export default function Dispensing() {
         leftNavMode === 'normal' ? styles.hasLeftNav : '',
       ])}>
       <ExtensionSlot name="dispensing-dashboard-slot" />
+      <WorkspaceContainer key="dispensing" contextKey="dispensing" />
     </div>
   );
 }

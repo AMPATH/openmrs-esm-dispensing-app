@@ -1,17 +1,16 @@
 import React from 'react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { usePagination } from '@openmrs/esm-framework';
 import { usePatientConditions } from './conditions.resource';
 import PatientConditions from './conditions.component';
 
-vi.mock('./conditions.resource', () => ({
-  usePatientConditions: vi.fn(),
+jest.mock('./conditions.resource', () => ({
+  usePatientConditions: jest.fn(),
   pageSizesOptions: [3, 5, 10],
 }));
 
-const mockUsePatientConditions = vi.mocked(usePatientConditions);
-const mockUsePagination = vi.mocked(usePagination);
+const mockUsePatientConditions = jest.mocked(usePatientConditions);
+const mockUsePagination = jest.mocked(usePagination);
 
 const mockPatientUuid = 'test-patient-uuid';
 
@@ -20,9 +19,9 @@ describe('PatientConditions', () => {
     mockUsePagination.mockReturnValue({
       results: [],
       currentPage: 1,
-      goTo: vi.fn(),
-      goToNext: vi.fn(),
-      goToPrevious: vi.fn(),
+      goTo: jest.fn(),
+      goToNext: jest.fn(),
+      goToPrevious: jest.fn(),
       paginated: false,
       showNextButton: false,
       showPreviousButton: false,
@@ -35,7 +34,7 @@ describe('PatientConditions', () => {
       conditions: [],
       error: undefined,
       isLoading: true,
-      mutate: vi.fn(),
+      mutate: jest.fn(),
     });
 
     render(<PatientConditions patientUuid={mockPatientUuid} />);
@@ -50,7 +49,7 @@ describe('PatientConditions', () => {
       conditions: [],
       error: new Error(errorMessage),
       isLoading: false,
-      mutate: vi.fn(),
+      mutate: jest.fn(),
     });
 
     render(<PatientConditions patientUuid={mockPatientUuid} />);
@@ -63,7 +62,7 @@ describe('PatientConditions', () => {
       conditions: [],
       error: undefined,
       isLoading: false,
-      mutate: vi.fn(),
+      mutate: jest.fn(),
     });
 
     render(<PatientConditions patientUuid={mockPatientUuid} />);
@@ -99,15 +98,15 @@ describe('PatientConditions', () => {
       conditions,
       error: undefined,
       isLoading: false,
-      mutate: vi.fn(),
+      mutate: jest.fn(),
     });
 
     mockUsePagination.mockReturnValue({
       results: conditions,
       currentPage: 1,
-      goTo: vi.fn(),
-      goToNext: vi.fn(),
-      goToPrevious: vi.fn(),
+      goTo: jest.fn(),
+      goToNext: jest.fn(),
+      goToPrevious: jest.fn(),
       paginated: false,
       showNextButton: false,
       showPreviousButton: false,
@@ -140,15 +139,15 @@ describe('PatientConditions', () => {
       conditions,
       error: undefined,
       isLoading: false,
-      mutate: vi.fn(),
+      mutate: jest.fn(),
     });
 
     mockUsePagination.mockReturnValue({
       results: conditions,
       currentPage: 1,
-      goTo: vi.fn(),
-      goToNext: vi.fn(),
-      goToPrevious: vi.fn(),
+      goTo: jest.fn(),
+      goToNext: jest.fn(),
+      goToPrevious: jest.fn(),
       paginated: false,
       showNextButton: false,
       showPreviousButton: false,
@@ -178,15 +177,15 @@ describe('PatientConditions', () => {
       conditions,
       error: undefined,
       isLoading: false,
-      mutate: vi.fn(),
+      mutate: jest.fn(),
     });
 
     mockUsePagination.mockReturnValue({
       results: conditions,
       currentPage: 1,
-      goTo: vi.fn(),
-      goToNext: vi.fn(),
-      goToPrevious: vi.fn(),
+      goTo: jest.fn(),
+      goToNext: jest.fn(),
+      goToPrevious: jest.fn(),
       paginated: false,
       showNextButton: false,
       showPreviousButton: false,

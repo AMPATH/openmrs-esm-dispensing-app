@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSWRConfig } from 'swr';
 import { Button, ModalBody, ModalFooter, ModalHeader } from '@carbon/react';
 import { Trans, useTranslation } from 'react-i18next';
 import { getPatientName, showSnackbar, useConfig, useSession } from '@openmrs/esm-framework';
@@ -47,9 +46,8 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
   const { dispenserProviderRoles } = useConfig<PharmacyConfig>();
   const session = useSession();
   const providers = useProviders(dispenserProviderRoles);
-  const { medicationRequestBundles, isLoading: isLoadingPrescriptionDetails } = usePrescriptionDetails(encounterUuid);
+  const { medicationRequestBundles } = usePrescriptionDetails(encounterUuid);
   const { t } = useTranslation();
-  const { mutate } = useSWRConfig();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const onConfirm = async () => {
@@ -102,7 +100,7 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
 
       close();
     } finally {
-      revalidate(mutate, encounterUuid);
+      revalidate(encounterUuid);
       setIsSubmitting(false);
     }
   };
@@ -128,7 +126,7 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
           {t('createOrderWithoutDispensing', 'Create order without dispensing')}
         </Button>
         <Button
-          disabled={isSubmitting || isLoadingPrescriptionDetails}
+          disabled={isSubmitting}
           onClick={() => {
             onConfirm();
           }}>

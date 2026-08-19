@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import template from 'lodash/template';
-import { type useSWRConfig } from 'swr';
+import { mutate } from 'swr';
 import {
   type Coding,
   type DispensingStore,
@@ -24,8 +24,6 @@ import {
   PRESCRIPTION_DETAILS_ENDPOINT,
   PRESCRIPTIONS_TABLE_ENDPOINT,
 } from './constants';
-
-type ScopedMutator = ReturnType<typeof useSWRConfig>['mutate'];
 
 const unitsDontMatchErrorMessage =
   "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. " +
@@ -582,16 +580,10 @@ export function isMostRecentMedicationDispense(
 
 /**
  * Revalidated (reloads) both the prescription associated with the encounter uuid,
- * and the entire prescription table.
- *
- * The `mutate` must be the one obtained from `useSWRConfig()` in the calling component, not the
- * global `mutate` imported from `swr`. OpenMRS wraps every microfrontend in an `<SWRConfig>` with a
- * custom cache provider, so the global `mutate` (bound to SWR's default cache) does not see the
- * app's cached entries and would silently no-op.
- * @param mutate the cache-bound mutator from `useSWRConfig()`
+ * and the entire prescription table
  * @param encounterUuid
  */
-export async function revalidate(mutate: ScopedMutator, encounterUuid: string) {
+export async function revalidate(encounterUuid: string) {
   await mutate(
     (key) =>
       typeof key === 'string' &&

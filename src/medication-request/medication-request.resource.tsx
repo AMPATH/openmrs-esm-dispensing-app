@@ -243,14 +243,13 @@ export function useMedicationRequest(reference: string, refreshInterval) {
       : `MedicationRequest/${reference}`
     : null;
 
-  const { data, isLoading } = useSWR<{ data: MedicationRequest }, Error>(
+  const { data } = useSWR<{ data: MedicationRequest }, Error>(
     reference ? `${fhirBaseUrl}/${reference}` : null,
     openmrsFetch,
     { refreshInterval: refreshInterval },
   );
   return {
     medicationRequest: data ? data.data : null,
-    isLoading,
   };
 }
 

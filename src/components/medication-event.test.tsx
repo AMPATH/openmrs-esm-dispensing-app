@@ -1,11 +1,10 @@
 import React from 'react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { useConfig } from '@openmrs/esm-framework';
 import { type MedicationRequest, MedicationRequestStatus } from '../types';
 import MedicationEvent from './medication-event.component';
 
-const mockUseConfig = vi.mocked(useConfig);
+const mockUseConfig = jest.mocked(useConfig);
 
 const baseMedicationRequest: MedicationRequest = {
   resourceType: 'MedicationRequest',
@@ -178,7 +177,7 @@ describe('MedicationEvent', () => {
           route: {
             coding: [],
           },
-        },
+        } as any,
       ],
     };
 

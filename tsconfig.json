@@ -1,5 +1,4 @@
 {
-  "include": ["src/**/*", "tools/**/*", "vitest.config.ts"],
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -10,9 +9,10 @@
       "esnext"
     ],
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "noEmit": true,
     "paths": {
+      "@openmrs/*": ["./node_modules/@openmrs/*"],
       "__mocks__": ["./__mocks__"],
       "tools": ["./tools"],
     },

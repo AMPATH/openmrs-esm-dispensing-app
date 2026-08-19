@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSWRConfig } from 'swr';
 import { useTranslation } from 'react-i18next';
 import { Button, ComboBox, Form, InlineLoading } from '@carbon/react';
 import {
@@ -35,7 +34,6 @@ const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormPro
   closeWorkspace,
 }) => {
   const { t } = useTranslation();
-  const { mutate } = useSWRConfig();
   const config = useConfig<PharmacyConfig>();
   const { patient, isLoading } = usePatient(patientUuid);
   const { activeVisit } = useVisit(patientUuid);
@@ -90,7 +88,7 @@ const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormPro
         })
         .then((response) => {
           if (response.ok) {
-            revalidate(mutate, encounterUuid);
+            revalidate(encounterUuid);
             showSnackbar({
               kind: 'success',
               title: t(

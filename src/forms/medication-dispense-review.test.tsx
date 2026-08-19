@@ -1,23 +1,18 @@
 import React from 'react';
-import { vi, describe, test, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useConfig, useSession } from '@openmrs/esm-framework';
 import { type MedicationDispense, MedicationDispenseStatus } from '../types';
 import MedicationDispenseReview from './medication-dispense-review.component';
 import { useProviders } from '../medication-dispense/medication-dispense.resource';
-import type * as MedicationDispenseResource from '../medication-dispense/medication-dispense.resource';
 
-vi.mock('../medication-dispense/medication-dispense.resource', async (importOriginal) => {
-  const actual = await importOriginal<typeof MedicationDispenseResource>();
-  return {
-    ...actual,
-    useProviders: vi.fn(),
-  };
-});
+jest.mock('../medication-dispense/medication-dispense.resource', () => ({
+  ...jest.requireActual('../medication-dispense/medication-dispense.resource'),
+  useProviders: jest.fn(),
+}));
 
-const mockUseConfig = vi.mocked(useConfig);
-const mockUseProviders = vi.mocked(useProviders);
-const mockUseSession = vi.mocked(useSession);
+const mockUseConfig = jest.mocked(useConfig);
+const mockUseProviders = jest.mocked(useProviders);
+const mockUseSession = jest.mocked(useSession);
 
 beforeEach(() => {
   mockUseConfig.mockReturnValue({
@@ -146,7 +141,7 @@ describe('Medication Dispense Review Component tests', () => {
       },
     };
 
-    const mockUpdate = vi.fn();
+    const mockUpdate = jest.fn();
     render(
       <MedicationDispenseReview
         medicationDispense={medicationDispense}

@@ -3,19 +3,13 @@ import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
 import { type PatientUuid, useConfig, UserHasAccess, useVisit } from '@openmrs/esm-framework';
-import {
-  computeMedicationRequestCombinedStatus,
-  getConceptCodingDisplay,
-  useStaleEncounterUuids,
-  getMostRecentMedicationDispenseStatus,
-} from '../utils';
+import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay, useStaleEncounterUuids } from '../utils';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
 import {
   type AllergyIntolerance,
-  type MedicationRequestBundle,
+  type MedicationRequest,
   MedicationRequestCombinedStatus,
   MedicationRequestStatus,
-  MedicationDispenseStatus
 } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import {
@@ -70,12 +64,11 @@ const PrescriptionDetails: React.FC<{
     invalidateBills();
   };
 
-  const generateStatusTag = (medicationRequestBundle: MedicationRequestBundle): React.ReactNode => {
+  const generateStatusTag = (medicationRequest: MedicationRequest): React.ReactNode => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
-      medicationRequestBundle.request,
+      medicationRequest,
       config.medicationRequestExpirationPeriodInDays,
     );
-
     if (combinedStatus === MedicationRequestCombinedStatus.cancelled) {
       return <Tag type="red">{t('cancelled', 'Cancelled')}</Tag>;
     }
@@ -94,12 +87,6 @@ const PrescriptionDetails: React.FC<{
 
     if (combinedStatus === MedicationRequestCombinedStatus.on_hold) {
       return <Tag type="red">{t('paused', 'Paused')}</Tag>;
-    }
-
-    // If there is no combined status, but the last event was a dispense, display "dispensed"
-    const mostRecentDispenseStatus = getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
-    if (mostRecentDispenseStatus === MedicationDispenseStatus.completed) {
-      return <Tag type="gray">{t('dispensed', 'Dispensed')}</Tag>;
     }
 
     return null;
@@ -186,7 +173,7 @@ const PrescriptionDetails: React.FC<{
               <MedicationEvent
                 key={bundle.request.id}
                 medicationEvent={medicationEvent}
-                status={generateStatusTag(bundle)}>
+                status={generateStatusTag(bundle.request)}>
                 <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
                   <ActionButtons
                     patientUuid={patientUuid}

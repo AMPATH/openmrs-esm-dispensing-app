@@ -79,7 +79,6 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
   // t('completed', 'Completed')
   // t('expired', 'Expired')
   // t('cancelled', 'Cancelled')
-  // t('dispensed', 'Dispensed')
 
   let columns = [
     { header: t('created', 'Created'), key: 'created' },

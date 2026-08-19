@@ -25,12 +25,6 @@ test.beforeEach(async ({ api, patient }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 });
 
-test.afterEach(async ({ api }) => {
-  await deleteEncounter(api, encounter.uuid);
-  await deleteDrugOrder(api, drugOrder.uuid);
-  await endVisit(api, visit);
-});
-
 test('View active prescriptions', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
 
@@ -69,4 +63,10 @@ test('View active prescriptions', async ({ page, patient }) => {
       .click();
     await expect(page.getByLabel('Prescription details', { exact: true })).toBeVisible();
   });
+});
+
+test.afterEach(async ({ api }) => {
+  await deleteEncounter(api, encounter.uuid);
+  await deleteDrugOrder(api, drugOrder.uuid);
+  await endVisit(api, visit);
 });

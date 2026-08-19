@@ -1,6 +1,3 @@
-import dayjs from 'dayjs';
-import { vi, describe, expect, test } from 'vitest';
-import isToday from 'dayjs/plugin/isToday';
 import useSWR from 'swr';
 import { openmrsFetch, type Session } from '@openmrs/esm-framework';
 import {
@@ -18,11 +15,10 @@ import {
   MedicationRequestStatus,
   type Provider,
 } from '../types';
+import dayjs from 'dayjs';
 
-dayjs.extend(isToday);
-
-vi.mocked(openmrsFetch);
-vi.mock('swr');
+jest.mocked(openmrsFetch);
+jest.mock('swr');
 
 describe('Medication Dispense Resource tests', () => {
   test('saveMedicationDispense should call medication dispense FHIR endpoint with appropriate data and method POST', () => {
@@ -156,7 +152,6 @@ describe('Medication Dispense Resource tests', () => {
             repeat: {
               duration: 30.0,
               durationUnit: 'd',
-              boundsDuration: undefined,
             },
             code: {
               coding: [
