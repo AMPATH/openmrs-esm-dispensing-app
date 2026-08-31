@@ -1,7 +1,7 @@
-import React, { type ReactNode } from 'react';
+import React, { useMemo, type ReactNode } from 'react';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { Tile } from '@carbon/react';
+import { Tag, Tile } from '@carbon/react';
 import { isDesktop, useLayoutType } from '@openmrs/esm-framework';
 import { type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
 import {
@@ -30,6 +30,13 @@ const MedicationEvent: React.FC<{
   const refillsAllowed: number = getRefillsAllowed(medicationEvent);
   const isTablet = !isDesktop(useLayoutType());
 
+  const renewal = useMemo(() => {
+    if (medicationEvent?.priorPrescription && medicationEvent?.status?.trim()?.toUpperCase() === 'ACTIVE') {
+      return t('renewal', 'Renewal');
+    }
+    return null;
+  }, [medicationEvent]);
+
   return (
     <Tile
       className={classNames({
@@ -38,6 +45,11 @@ const MedicationEvent: React.FC<{
         [styles.isTablet]: isTablet,
       })}>
       <div>
+        {renewal && (
+          <div>
+            <Tag type="blue">{renewal}</Tag>
+          </div>
+        )}
         <p className={styles.medicationName}>
           {status}
           {status && ' '}
