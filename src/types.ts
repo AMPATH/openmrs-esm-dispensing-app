@@ -264,6 +264,7 @@ export interface MedicationDispense {
     reason?: CodeableConcept[];
     type?: CodeableConcept;
   };
+  priorPrescription?: any;
 }
 
 export enum MedicationDispenseStatus {
@@ -331,6 +332,7 @@ export interface MedicationRequest {
     };
   };
   authoredOn?: string;
+  priorPrescription?: any;
 }
 
 export interface MedicationRequestResponse {

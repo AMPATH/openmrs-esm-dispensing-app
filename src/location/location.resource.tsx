@@ -41,7 +41,8 @@ function toSimpleLocation(associatedPharmacyLocationAttribute: string) {
 }
 
 function useLocationsByTag(config: PharmacyConfig, enabled: boolean) {
-  const { tag, associatedPharmacyLocationAttribute } = config.locationBehavior.locationFilter;
+  const { sessionLocation } = useSession();
+  const { tag, associatedPharmacyLocationAttribute, useCurrentLocation } = config.locationBehavior.locationFilter;
   const url = enabled
     ? `${restBaseUrl}/location?tag=${encodeURIComponent(tag)}&v=custom:(uuid,name,attributes:(attributeType:(name),value:(uuid)))`
     : null;
@@ -50,6 +51,11 @@ function useLocationsByTag(config: PharmacyConfig, enabled: boolean) {
   const locations = useMemo(
     () =>
       (data?.data?.results ?? [])
+        .filter((location) => {
+          if (!useCurrentLocation) return location;
+
+          return location?.uuid === sessionLocation?.uuid;
+        })
         .map(toSimpleLocation(associatedPharmacyLocationAttribute))
         .sort((a, b) => a.name.localeCompare(b.name)),
     [data, associatedPharmacyLocationAttribute],
@@ -60,7 +66,7 @@ function useLocationsByTag(config: PharmacyConfig, enabled: boolean) {
 
 function useVisitLocationDescendants(config: PharmacyConfig, enabled: boolean) {
   const { sessionLocation } = useSession();
-  const { tag, associatedPharmacyLocationAttribute } = config.locationBehavior.locationFilter;
+  const { tag, associatedPharmacyLocationAttribute, useCurrentLocation } = config.locationBehavior.locationFilter;
   const isEMRAPIInstalled = useFeatureFlag('emrapi-module');
 
   const configError = useMemo(
@@ -75,19 +81,22 @@ function useVisitLocationDescendants(config: PharmacyConfig, enabled: boolean) {
 
   const url =
     enabled && !configError && sessionLocation?.uuid
-      ? `${restBaseUrl}/emrapi/locationThatSupportsVisits?location=${sessionLocation.uuid}&v=custom:(uuid,name,descendantLocations:(uuid,name,tags,attributes:(attributeType:(name),value:(uuid))))`
+      ? `${restBaseUrl}/emrapi/locationThatSupportsVisits?location=${sessionLocation.uuid}&v=custom:(uuid,name,attributes:(attributeType:(name),value:(uuid)),descendantLocations:(uuid,name,tags,attributes:(attributeType:(name),value:(uuid))))`
       : null;
-  const { data, ...rest } = useSWR<FetchResponse<{ descendantLocations: Location[] }>>(url, openmrsFetch);
+  const { data, ...rest } = useSWR<FetchResponse<{ uuid: string; descendantLocations: Location[] }>>(url, openmrsFetch);
 
-  const locations = useMemo(
-    () =>
-      (data?.data?.descendantLocations ?? [])
-        // emrapi/locationThatSupportsVisits does not support server-side tag filtering, so we filter client-side
-        .filter((l) => l.tags?.some((t) => t.display === tag))
-        .map(toSimpleLocation(associatedPharmacyLocationAttribute))
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    [data, tag, associatedPharmacyLocationAttribute],
-  );
+  const locations = useMemo(() => {
+    const descendantLocations = (data?.data?.descendantLocations ?? [])
+      // emrapi/locationThatSupportsVisits does not support server-side tag filtering, so we filter client-side
+      .filter((l) => l.tags?.some((t) => t.display === tag))
+      .map(toSimpleLocation(associatedPharmacyLocationAttribute))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    const currentLocation = (useCurrentLocation && data?.data?.uuid ? [data?.data] : [])
+      .map(toSimpleLocation(associatedPharmacyLocationAttribute))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return [descendantLocations, currentLocation].flatMap((l) => l);
+  }, [data, tag, associatedPharmacyLocationAttribute]);
 
   return { locations, ...rest, error: configError ?? rest.error };
 }
