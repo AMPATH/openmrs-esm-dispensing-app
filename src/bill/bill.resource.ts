@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import { type OrderBillResponse, type PreauthPreviewResponse } from './bill.types';
 
 export const useBills = (patientUuid: string = '', billStatus: string = 'PENDING') => {
-  const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&v=custom:(uuid,patient:(uuid),lineItems:(uuid,billableService,quantity,price,item,priceUuid,priceName,status),status)`;
+  const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&v=custom:(uuid,patient:(uuid),lineItems:(uuid,billableService,quantity,price,item,priceName,status),status)`;
 
   const {
     data,
