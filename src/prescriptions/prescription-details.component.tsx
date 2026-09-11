@@ -70,7 +70,7 @@ const PrescriptionDetails: React.FC<{
   const { isLoading: isLoadingProviderClaim, claimVisit } = useProviderClaimPreview(consentToken);
   const { isLoading: isLoadingPreauthRequests, preauthRequests } = usePreauthPreview(consentToken);
   const hasActiveRequests = useMemo(() => {
-    return medicationRequestBundles.some(
+    return medicationRequestBundles?.some(
       (bundle) =>
         computeMedicationRequestCombinedStatus(bundle.request, config.medicationRequestExpirationPeriodInDays) ===
         MedicationRequestCombinedStatus.active,
