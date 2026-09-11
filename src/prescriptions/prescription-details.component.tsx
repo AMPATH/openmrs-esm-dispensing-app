@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
-import { type PatientUuid, useConfig, UserHasAccess, useVisit } from '@openmrs/esm-framework';
+import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
 import {
   computeMedicationRequestCombinedStatus,
   getConceptCodingDisplay,
@@ -15,7 +15,7 @@ import {
   type MedicationRequestBundle,
   MedicationRequestCombinedStatus,
   MedicationRequestStatus,
-  MedicationDispenseStatus
+  MedicationDispenseStatus,
 } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import {
@@ -27,7 +27,8 @@ import ActionButtons from '../components/action-buttons.component';
 import MedicationEvent from '../components/medication-event.component';
 import PrescriptionsActionsFooter from './prescription-actions.component';
 import styles from './prescription-details.scss';
-import { useBills, useInvalidateBills, usePreauthPreview } from '../bill/bill.resource';
+import { useBills, useInvalidateBills, usePreauthPreview, useProviderClaimPreview } from '../bill/bill.resource';
+import { useEncounter } from '../visit/visit.resource';
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -44,17 +45,29 @@ const PrescriptionDetails: React.FC<{
   const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
   const { staleEncounterUuids } = useStaleEncounterUuids();
   const { orders, isLoading: isLoadingOrders } = useOrders(encounterUuid);
+  const { visit } = useEncounter(encounterUuid);
   const { bills, isLoading: loadingBills } = useBills(patientUuid);
-  const { activeVisit } = useVisit(patientUuid);
+  // DO NOT REMOVE
+  // const { activeVisit } = useVisit(patientUuid);
+  // const consentToken = useMemo(() => {
+  //   if (activeVisit) {
+  //     return (
+  //       activeVisit?.attributes?.find((atr) => atr?.attributeType?.uuid === '4962a633-c4f8-474c-857c-5c68c72fbbe3')
+  //         ?.value ?? ''
+  //     );
+  //   }
+  //   return '';
+  // }, [activeVisit]);
   const consentToken = useMemo(() => {
-    if (activeVisit) {
+    if (visit) {
       return (
-        activeVisit?.attributes?.find((atr) => atr?.attributeType?.uuid === '4962a633-c4f8-474c-857c-5c68c72fbbe3')
-          ?.value ?? ''
+        visit?.attributes?.find((atr) => atr?.attributeType?.uuid === '4962a633-c4f8-474c-857c-5c68c72fbbe3')?.value ??
+        ''
       );
     }
     return '';
-  }, [activeVisit]);
+  }, [visit]);
+  const { isLoading: isLoadingProviderClaim, claimVisit } = useProviderClaimPreview(consentToken);
   const { isLoading: isLoadingPreauthRequests, preauthRequests } = usePreauthPreview(consentToken);
   const hasActiveRequests = useMemo(() => {
     return medicationRequestBundles.some(
@@ -201,6 +214,8 @@ const PrescriptionDetails: React.FC<{
                     mutated={mutated}
                     preauthRequests={preauthRequests}
                     isLoadingPreauthRequests={isLoadingPreauthRequests}
+                    claimVisit={claimVisit}
+                    isLoadingProviderClaim={isLoadingProviderClaim}
                   />
                 </UserHasAccess>
               </MedicationEvent>

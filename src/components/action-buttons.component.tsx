@@ -18,7 +18,7 @@ import { useProviders } from '../medication-dispense/medication-dispense.resourc
 import styles from './action-buttons.scss';
 import { useOdooBills, useOrderBill } from '../bill/bill.resource';
 import { InlineLoading } from '@carbon/react';
-import { type PreauthRequest } from '../bill/bill.types';
+import { type ClaimsVisit, type PreauthRequest } from '../bill/bill.types';
 
 interface ActionButtonsProps {
   medicationRequestBundle: MedicationRequestBundle;
@@ -33,6 +33,8 @@ interface ActionButtonsProps {
   mutated: () => void;
   preauthRequests: PreauthRequest[];
   isLoadingPreauthRequests: boolean;
+  claimVisit: ClaimsVisit;
+  isLoadingProviderClaim: boolean;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -48,8 +50,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   mutated,
   preauthRequests,
   isLoadingPreauthRequests,
+  claimVisit,
+  isLoadingProviderClaim,
 }) => {
   const [status, setStatus] = useState<BillStatus>('BLANK');
+  const [isClaim, setIsClaim] = useState<boolean>();
+  const [isClaimSubmitted, setIsClaimSubmitted] = useState<boolean>();
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const providers = useProviders(config.dispenserProviderRoles);
@@ -66,16 +72,27 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
   useEffect(() => {
     if (!config.enableOdooBilling) {
-      if (!isLoading && !isLoadingOrderBill && !isLoadingPreauthRequests && orderBill && bills) {
+      if (
+        !isLoading &&
+        !isLoadingOrderBill &&
+        !isLoadingPreauthRequests &&
+        !isLoadingProviderClaim &&
+        orderBill &&
+        bills
+      ) {
         const billUuid = orderBill?.bill_uuid;
         const lineItemUuid = orderBill?.line_item_uuid;
-        const bill = bills.find((b) => b.uuid === billUuid);
-        const lineItem = bill?.lineItems?.find((i) => i.uuid === lineItemUuid);
+        const bill = bills.find((b) => b?.uuid === billUuid);
+        const lineItem = bill?.lineItems?.find((i) => i?.uuid === lineItemUuid);
         if (lineItem) {
           if (!config.blockedPaymentModes.includes(lineItem.priceName.toUpperCase())) {
             if (!orderBill.consent_token) {
               setStatus('AWAITING CLAIM VISIT');
               return;
+            }
+            setIsClaim(true);
+            if (claimVisit && claimVisit?.workflow_state?.trim()?.toUpperCase() === 'DRAFT') {
+              setIsClaimSubmitted(false);
             }
             if (orderBill.requires_preauth) {
               if (preauthRequests && preauthRequests.length) {
@@ -100,6 +117,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
               setStatus('PAID');
             }
           } else {
+            setIsClaim(false);
             setStatus(lineItem?.status as BillStatus);
           }
         } else {
@@ -129,6 +147,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     config.enableOdooBilling,
     preauthRequests,
     isLoadingPreauthRequests,
+    claimVisit,
+    isLoadingProviderClaim,
   ]);
 
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
@@ -181,6 +201,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     billStatus: status,
     isLoading: isLoading,
     hasActiveRequests,
+    isClaim,
+    isClaimSubmitted,
     mutated,
   };
 
