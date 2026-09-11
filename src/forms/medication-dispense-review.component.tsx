@@ -168,17 +168,24 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   }, [session]);
 
   const providersPlusCurrentUser = useMemo(() => {
-    const currentUserInProviderList = providers?.some((provider) => provider.uuid === session?.currentProvider?.uuid);
+    const providerList = providers ?? [];
+    const currentUserInProviderList = providerList.some(
+      (provider) => provider?.uuid === session?.currentProvider?.uuid,
+    );
     return currentUserInProviderList
-      ? providers
+      ? providerList
       : [
-          ...providers,
-          {
-            uuid: session.currentProvider.uuid,
-            person: {
-              display: session?.user?.person?.display ?? '',
-            },
-          },
+          ...providerList,
+          ...(session?.currentProvider?.uuid
+            ? [
+                {
+                  uuid: session.currentProvider.uuid,
+                  person: {
+                    display: session?.user?.person?.display ?? '',
+                  },
+                },
+              ]
+            : []),
         ];
   }, [providers, session]);
 
