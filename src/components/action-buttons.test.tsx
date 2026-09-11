@@ -16,7 +16,7 @@ import ActionButtons from './action-buttons.component';
 import CloseActionButton from './prescription-actions/close-action-button.component';
 import DispenseActionButton from './prescription-actions/dispense-action-button.component';
 import PauseActionButton from './prescription-actions/pause-action-button.component';
-import { type PreauthRequest } from '../bill/bill.types';
+import { type ClaimsVisit, type PreauthRequest } from '../bill/bill.types';
 
 const mockedUseConfig = vi.mocked(useConfig);
 const mockedExtensionSlot = vi.mocked(ExtensionSlot);
@@ -124,6 +124,7 @@ const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRece
 const orders = [] as Order[];
 const bills = [] as BillInvoice[];
 const preauthRequests = [] as PreauthRequest[];
+const claimVisit = {} as ClaimsVisit;
 const mutated = () => {};
 
 const prescriptionActionsState = {
@@ -143,7 +144,11 @@ const prescriptionActionsState = {
   billStatus: 'PAID' as BillStatus,
   hasActiveRequests: true,
   preauthRequests: [],
+  claimVisit: {},
   isLoadingPreauthRequests: false,
+  isLoadingProviderClaim: false,
+  isClaim: false,
+  isClaimSubmitted: false,
 };
 
 describe('Action Buttons Component tests', () => {
@@ -187,6 +192,8 @@ describe('Action Buttons Component tests', () => {
         isLoading={false}
         preauthRequests={preauthRequests}
         isLoadingPreauthRequests={false}
+        claimVisit={claimVisit}
+        isLoadingProviderClaim={false}
       />,
     );
     expect(getByText('Dispense')).toBeInTheDocument();
@@ -240,6 +247,8 @@ describe('Action Buttons Component tests', () => {
         isLoading={false}
         preauthRequests={preauthRequests}
         isLoadingPreauthRequests={false}
+        claimVisit={claimVisit}
+        isLoadingProviderClaim={false}
       />,
     );
 

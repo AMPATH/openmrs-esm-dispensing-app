@@ -3,7 +3,7 @@ import useSWR, { mutate } from 'swr';
 import { type BillInvoice } from '../types';
 import { useCallback } from 'react';
 import dayjs from 'dayjs';
-import { type OrderBillResponse, type PreauthPreviewResponse } from './bill.types';
+import { type ClaimsVisit, type OrderBillResponse, type PreauthPreviewResponse } from './bill.types';
 
 export const useBills = (patientUuid: string = '', billStatus: string = 'PENDING') => {
   const url = `${restBaseUrl}/billing/bill?patientUuid=${patientUuid}&v=custom:(uuid,patient:(uuid),lineItems:(uuid,billableService,quantity,price,item,priceName,status),status)`;
@@ -147,3 +147,36 @@ export const usePreauthPreview = (consentToken: string) => {
     mutated,
   };
 };
+
+const providerClaimPreviewUrl = (hieBaseUrl: string, consentToken: string, locationUuid: string) =>
+  `${hieBaseUrl}/claim-preview/provider?consentToken=${encodeURIComponent(
+    consentToken,
+  )}&locationUuid=${encodeURIComponent(locationUuid)}`;
+
+export function useProviderClaimPreview(consentToken: string) {
+  const { hieBaseUrl } = useConfig({
+    externalModuleName: '@ampath/esm-dha-workflow-app',
+  });
+  const sessionLocation = useSession();
+  const url = consentToken
+    ? providerClaimPreviewUrl(hieBaseUrl, consentToken, sessionLocation?.sessionLocation?.uuid)
+    : null;
+
+  const { data, error, isLoading, isValidating } = useSWR<{
+    data: ClaimsVisit;
+  }>(url, openmrsFetch, {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+  });
+
+  const results = data?.data;
+
+  return {
+    claimVisit: results,
+    error,
+    isLoading,
+    isValidating,
+  };
+}

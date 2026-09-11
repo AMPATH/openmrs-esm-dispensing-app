@@ -1,10 +1,10 @@
 import React from 'react';
-import { Button } from '@carbon/react';
+import { Button, Tag } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { launchWorkspace2, type Session } from '@openmrs/esm-framework';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
 import { type Provider, type MedicationRequestBundle, type BillStatus } from '../../types';
-import { usePatientBills } from '../../bill/bill.resource';
+// import { usePatientBills } from '../../bill/bill.resource';
 
 type DispenseActionButtonProps = {
   patientUuid: string;
@@ -17,6 +17,8 @@ type DispenseActionButtonProps = {
   quantityDispensed: number;
   disabled: boolean;
   billStatus: BillStatus;
+  isClaim: boolean;
+  isClaimSubmitted: boolean;
 };
 
 const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
@@ -30,6 +32,8 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   quantityDispensed,
   disabled,
   billStatus = 'PAID',
+  isClaim,
+  isClaimSubmitted,
 }) => {
   const { t } = useTranslation();
   const dispenseWorkspaceProps = {
@@ -42,7 +46,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
     mode: 'enter',
   };
 
-  const { currentDayBills } = usePatientBills(patientUuid);
+  // const { currentDayBills } = usePatientBills(patientUuid);
 
   const handleLaunchWorkspace = () => {
     launchWorkspace2('dispense-workspace', dispenseWorkspaceProps);
@@ -59,6 +63,14 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   //     </Tag>
   //   );
   // }
+
+  if (isClaim && !isClaimSubmitted) {
+    return (
+      <Tag type="red" size="lg">
+        {t('submitClaimToDispense', 'Submit claim to dispense')}
+      </Tag>
+    );
+  }
 
   return billStatus === 'PAID' || billStatus === 'POSTED' ? (
     <Button kind="primary" onClick={handleLaunchWorkspace} disabled={disabled}>

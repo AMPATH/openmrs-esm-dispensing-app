@@ -395,3 +395,17 @@ export interface PreauthRequest {
 export interface PreauthPreviewResponse {
   results: PreauthRequest[];
 }
+
+export type ClaimsVisit = {
+  id: string;
+  payer_code: string;
+  payer_name: string;
+  service_type: string;
+  scheme_code: string;
+  scheme_name: string;
+  authorization_code: string;
+  authorization_guid: string;
+  beneficiary_id: number;
+  beneficiary_guid: string;
+  workflow_state: string;
+};
