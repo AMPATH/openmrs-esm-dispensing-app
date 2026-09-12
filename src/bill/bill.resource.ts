@@ -1,5 +1,5 @@
 import { openmrsFetch, type OpenmrsResource, restBaseUrl, useConfig, useSession } from '@openmrs/esm-framework';
-import useSWR, { mutate } from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 import { type BillInvoice } from '../types';
 import { useCallback } from 'react';
 import dayjs from 'dayjs';
@@ -30,13 +30,24 @@ export const useBills = (patientUuid: string = '', billStatus: string = 'PENDING
 };
 
 export function useInvalidateBills(patientUuid: string) {
+  const { mutate } = useSWRConfig();
+  const { hieBaseUrl } = useConfig({
+    externalModuleName: '@ampath/esm-dha-workflow-app',
+  });
+
   return useCallback(() => {
     mutate(
-      (key) => typeof key === 'string' && key.startsWith(`${restBaseUrl}/billing/bill?patientUuid=${patientUuid}`),
+      (key) =>
+        typeof key === 'string' &&
+        (key.startsWith(`${restBaseUrl}/billing/bill?patientUuid=${patientUuid}`) ||
+          (hieBaseUrl && key.startsWith(`${hieBaseUrl}/bill-order`)) ||
+          (hieBaseUrl && key.startsWith(`${hieBaseUrl}/pre-auth/preview`)) ||
+          (hieBaseUrl && key.startsWith(`${hieBaseUrl}/claim-preview`)) ||
+          key.startsWith(`etl/odoo/billing/patient/${patientUuid}`)),
       undefined,
       { revalidate: true },
     );
-  }, [patientUuid]);
+  }, [mutate, patientUuid, hieBaseUrl]);
 }
 
 export const usePatientBills = (patientUuid: string, billStatus: string = 'PENDING,POSTED') => {
