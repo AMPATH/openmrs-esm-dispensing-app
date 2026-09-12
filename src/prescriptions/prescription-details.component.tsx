@@ -1,13 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
 import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import { useSWRConfig } from 'swr';
 import {
   computeMedicationRequestCombinedStatus,
   getConceptCodingDisplay,
   useStaleEncounterUuids,
   getMostRecentMedicationDispenseStatus,
+  revalidate,
 } from '../utils';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
 import {
@@ -77,11 +79,13 @@ const PrescriptionDetails: React.FC<{
     );
   }, [medicationRequestBundles, config]);
 
+  const { mutate } = useSWRConfig();
   const invalidateBills = useInvalidateBills(patientUuid);
 
-  const mutated = () => {
+  const mutated = useCallback(() => {
     invalidateBills();
-  };
+    revalidate(mutate, encounterUuid);
+  }, [invalidateBills, mutate, encounterUuid]);
 
   const generateStatusTag = (medicationRequestBundle: MedicationRequestBundle): React.ReactNode => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
@@ -195,29 +199,29 @@ const PrescriptionDetails: React.FC<{
                       b.medicationReference.reference === bundle.request.medicationReference.reference,
                   )
                 : bundle.request;
+            const statusTag = generateStatusTag(bundle);
             return (
-              <MedicationEvent
-                key={bundle.request.id}
-                medicationEvent={medicationEvent}
-                status={generateStatusTag(bundle)}>
-                <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
-                  <ActionButtons
-                    patientUuid={patientUuid}
-                    encounterUuid={encounterUuid}
-                    medicationRequestBundle={bundle}
-                    disabled={staleEncounterUuids.includes(encounterUuid)}
-                    orders={orders}
-                    bills={bills}
-                    isLoading={loadingBills}
-                    isLoadingOrders={isLoadingOrders}
-                    hasActiveRequests={hasActiveRequests}
-                    mutated={mutated}
-                    preauthRequests={preauthRequests}
-                    isLoadingPreauthRequests={isLoadingPreauthRequests}
-                    claimVisit={claimVisit}
-                    isLoadingProviderClaim={isLoadingProviderClaim}
-                  />
-                </UserHasAccess>
+              <MedicationEvent key={bundle.request.id} medicationEvent={medicationEvent} status={statusTag}>
+                {!statusTag && (
+                  <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
+                    <ActionButtons
+                      patientUuid={patientUuid}
+                      encounterUuid={encounterUuid}
+                      medicationRequestBundle={bundle}
+                      disabled={staleEncounterUuids.includes(encounterUuid)}
+                      orders={orders}
+                      bills={bills}
+                      isLoading={loadingBills}
+                      isLoadingOrders={isLoadingOrders}
+                      hasActiveRequests={hasActiveRequests}
+                      mutated={mutated}
+                      preauthRequests={preauthRequests}
+                      isLoadingPreauthRequests={isLoadingPreauthRequests}
+                      claimVisit={claimVisit}
+                      isLoadingProviderClaim={isLoadingProviderClaim}
+                    />
+                  </UserHasAccess>
+                )}
               </MedicationEvent>
             );
           })

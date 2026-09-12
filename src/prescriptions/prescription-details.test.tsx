@@ -9,9 +9,13 @@ import {
 } from '../medication-request/medication-request.resource';
 import { useStaleEncounterUuids } from '../utils';
 import type * as Utils from '../utils';
+import { OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 import PrescriptionDetails from './prescription-details.component';
 
 vi.mock('../medication-request/medication-request.resource');
+vi.mock('../components/action-buttons.component', () => ({
+  default: () => <button type="button">Mock Action Button</button>,
+}));
 vi.mock('../utils', async (importOriginal) => {
   const actual = await importOriginal<typeof Utils>();
   return {
@@ -34,6 +38,17 @@ describe('PrescriptionDetails', () => {
     mockUseConfig.mockReturnValue({
       refreshInterval: 10000,
       medicationRequestExpirationPeriodInDays: 90,
+      actionButtons: {
+        pauseButton: {
+          enabled: true,
+        },
+        closeButton: {
+          enabled: true,
+        },
+        printPrescriptionsButton: {
+          enabled: false,
+        },
+      },
       dispenseBehavior: {
         allowModifyingPrescription: false,
         restrictTotalQuantityDispensed: false,
@@ -336,6 +351,249 @@ describe('PrescriptionDetails', () => {
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
       expect(screen.getByText(/no prescriptions found/i)).toBeInTheDocument();
+    });
+
+    it('renders action buttons for active prescriptions without status tag', () => {
+      mockUsePatientAllergies.mockReturnValue({
+        allergies: [],
+        totalAllergies: 0,
+        error: undefined,
+        isLoading: false,
+      });
+      mockUsePrescriptionDetails.mockReturnValue({
+        medicationRequestBundles: [
+          {
+            request: {
+              resourceType: 'MedicationRequest',
+              id: 'med-req-active',
+              status: 'active',
+              intent: 'order',
+              priority: 'routine',
+              medicationReference: {
+                reference: 'Medication/med-1',
+                display: 'Amoxicillin 500mg',
+              },
+              dispenseRequest: {
+                validityPeriod: {
+                  start: new Date().toISOString(),
+                },
+                quantity: {
+                  value: 10,
+                  unit: 'Tablet',
+                },
+              },
+            } as any,
+            dispenses: [],
+          },
+        ],
+        prescriptionDate: new Date(),
+        error: undefined,
+        isLoading: false,
+        mutate: vi.fn(),
+        isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: vi.fn(),
+      });
+
+      render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
+
+      expect(screen.getByText('Amoxicillin 500mg')).toBeInTheDocument();
+      expect(screen.getByText('Mock Action Button')).toBeInTheDocument();
+      expect(screen.queryByText('Paused')).not.toBeInTheDocument();
+      expect(screen.queryByText('Closed')).not.toBeInTheDocument();
+      expect(screen.queryByText('Dispensed')).not.toBeInTheDocument();
+    });
+
+    it('shows Paused tag and hides action buttons when medication is paused', () => {
+      mockUsePatientAllergies.mockReturnValue({
+        allergies: [],
+        totalAllergies: 0,
+        error: undefined,
+        isLoading: false,
+      });
+      mockUsePrescriptionDetails.mockReturnValue({
+        medicationRequestBundles: [
+          {
+            request: {
+              resourceType: 'MedicationRequest',
+              id: 'med-req-paused',
+              status: 'active',
+              intent: 'order',
+              priority: 'routine',
+              extension: [
+                {
+                  url: OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+                  valueCode: 'on_hold',
+                },
+              ],
+              medicationReference: {
+                reference: 'Medication/med-1',
+                display: 'Amoxicillin 500mg',
+              },
+              dispenseRequest: {
+                validityPeriod: {
+                  start: new Date().toISOString(),
+                },
+                quantity: {
+                  value: 10,
+                  unit: 'Tablet',
+                },
+              },
+            } as any,
+            dispenses: [],
+          },
+        ],
+        prescriptionDate: new Date(),
+        error: undefined,
+        isLoading: false,
+        mutate: vi.fn(),
+        isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: vi.fn(),
+      });
+
+      render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
+
+      expect(screen.getByText('Amoxicillin 500mg')).toBeInTheDocument();
+      expect(screen.getByText('Paused')).toBeInTheDocument();
+      expect(screen.queryByText('Mock Action Button')).not.toBeInTheDocument();
+    });
+
+    it('shows Closed tag and hides action buttons when medication is closed', () => {
+      mockUsePatientAllergies.mockReturnValue({
+        allergies: [],
+        totalAllergies: 0,
+        error: undefined,
+        isLoading: false,
+      });
+      mockUsePrescriptionDetails.mockReturnValue({
+        medicationRequestBundles: [
+          {
+            request: {
+              resourceType: 'MedicationRequest',
+              id: 'med-req-closed',
+              status: 'active',
+              intent: 'order',
+              priority: 'routine',
+              extension: [
+                {
+                  url: OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+                  valueCode: 'declined',
+                },
+              ],
+              medicationReference: {
+                reference: 'Medication/med-1',
+                display: 'Amoxicillin 500mg',
+              },
+              dispenseRequest: {
+                validityPeriod: {
+                  start: new Date().toISOString(),
+                },
+                quantity: {
+                  value: 10,
+                  unit: 'Tablet',
+                },
+              },
+            } as any,
+            dispenses: [],
+          },
+        ],
+        prescriptionDate: new Date(),
+        error: undefined,
+        isLoading: false,
+        mutate: vi.fn(),
+        isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: vi.fn(),
+      });
+
+      render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
+
+      expect(screen.getByText('Amoxicillin 500mg')).toBeInTheDocument();
+      expect(screen.getByText('Closed')).toBeInTheDocument();
+      expect(screen.queryByText('Mock Action Button')).not.toBeInTheDocument();
+    });
+
+    it('shows Dispensed tag and hides action buttons when medication is dispensed', () => {
+      mockUsePatientAllergies.mockReturnValue({
+        allergies: [],
+        totalAllergies: 0,
+        error: undefined,
+        isLoading: false,
+      });
+      mockUsePrescriptionDetails.mockReturnValue({
+        medicationRequestBundles: [
+          {
+            request: {
+              resourceType: 'MedicationRequest',
+              id: 'med-req-dispensed',
+              status: 'active',
+              intent: 'order',
+              priority: 'routine',
+              medicationReference: {
+                reference: 'Medication/med-1',
+                display: 'Amoxicillin 500mg',
+              },
+              dispenseRequest: {
+                validityPeriod: {
+                  start: new Date().toISOString(),
+                },
+                quantity: {
+                  value: 10,
+                  unit: 'Tablet',
+                },
+              },
+            } as any,
+            dispenses: [
+              {
+                id: 'dispense-1',
+                status: 'completed',
+                medicationReference: {
+                  reference: 'Medication/med-1',
+                  display: 'Amoxicillin 500mg',
+                },
+                quantity: {
+                  value: 10,
+                  unit: 'Tablet',
+                },
+              } as any,
+            ],
+          },
+        ],
+        prescriptionDate: new Date(),
+        error: undefined,
+        isLoading: false,
+        mutate: vi.fn(),
+        isValidating: false,
+      });
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        isValidating: false,
+        isError: undefined,
+        mutate: vi.fn(),
+      });
+
+      render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
+
+      expect(screen.getByText('Amoxicillin 500mg')).toBeInTheDocument();
+      expect(screen.getByText('Dispensed')).toBeInTheDocument();
+      expect(screen.queryByText('Mock Action Button')).not.toBeInTheDocument();
     });
   });
 });
