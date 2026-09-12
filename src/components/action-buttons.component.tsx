@@ -56,6 +56,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   const [status, setStatus] = useState<BillStatus>('BLANK');
   const [isClaim, setIsClaim] = useState<boolean>();
   const [isClaimSubmitted, setIsClaimSubmitted] = useState<boolean>();
+  const [batchNumber, setBatchNumber] = useState<string>();
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const providers = useProviders(config.dispenserProviderRoles);
@@ -85,6 +86,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         const bill = bills.find((b) => b?.uuid === billUuid);
         const lineItem = bill?.lineItems?.find((i) => i?.uuid === lineItemUuid);
         if (lineItem) {
+          setBatchNumber(lineItem?.batchNumber);
           if (!config.blockedPaymentModes.includes(lineItem.priceName.toUpperCase())) {
             if (!orderBill.consent_token) {
               setStatus('AWAITING CLAIM VISIT');
@@ -203,6 +205,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     hasActiveRequests,
     isClaim,
     isClaimSubmitted,
+    batchNumber,
     mutated,
   };
 

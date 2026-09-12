@@ -245,4 +245,71 @@ describe('Medication Dispense Resource tests', () => {
     expect(medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.unit).toBe('Tablet');
     expect(medicationDispense.substitution.wasSubstituted).toBe(false);
   });
+
+  test('initiateMedicationDispenseBody should attach batch number extension when provided', () => {
+    const activeMedicationRequest: MedicationRequest = {
+      intent: '',
+      medicationReference: { reference: 'Medication/123abc' },
+      meta: { lastUpdated: '' },
+      priority: '',
+      resourceType: 'MedicationRequest',
+      status: MedicationRequestStatus.active,
+      subject: { reference: 'Patient/765432' },
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: {
+          value: 20.0,
+          system: 'http://snomed.info/sct',
+          code: '123456789',
+          unit: 'Tablet',
+        },
+        validityPeriod: { start: '' },
+      },
+      encounter: { reference: '', type: '' },
+      requester: {
+        display: '',
+        identifier: { value: '' },
+        reference: '',
+        type: '',
+      },
+      dosageInstruction: [],
+      id: '456def',
+    };
+
+    const session: Session = {
+      authenticated: true,
+      sessionId: '',
+      user: undefined,
+      currentProvider: {
+        uuid: 'ghi789',
+        identifier: undefined,
+      },
+      sessionLocation: {
+        uuid: '987654',
+        display: undefined,
+        links: undefined,
+      },
+    };
+
+    const providers: Provider[] = [
+      {
+        uuid: 'ghi789',
+        person: null,
+      },
+    ];
+
+    const medicationDispense = initiateMedicationDispenseBody(
+      activeMedicationRequest,
+      session,
+      providers,
+      true,
+      'BATCH-999',
+    );
+
+    expect(medicationDispense.extension).toBeDefined();
+    expect(medicationDispense.extension).toContainEqual({
+      url: 'https://ampath.or.ke/fhir/StructureDefinition/medicationdispense-batch-number',
+      valueString: 'BATCH-999',
+    });
+  });
 });

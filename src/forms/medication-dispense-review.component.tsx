@@ -3,7 +3,12 @@ import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { ComboBox, Dropdown, NumberInput, Stack, TextArea, Toggle } from '@carbon/react';
 import { OpenmrsDatePicker, useConfig, useSession, userHasAccess, ResponsiveWrapper } from '@openmrs/esm-framework';
-import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
+import {
+  getBatchNumber,
+  getConceptCodingUuid,
+  getMedicationReferenceOrCodeableConcept,
+  getOpenMRSMedicineDrugName,
+} from '../utils';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
 import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import {
@@ -352,6 +357,14 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             </div>
           </ResponsiveWrapper>
         ) : null}
+
+        {getBatchNumber(medicationDispense) && (
+          <ResponsiveWrapper>
+            <p className={styles.quantitySummary}>
+              {t('batchNumber', 'Batch Number')}: {getBatchNumber(medicationDispense)}
+            </p>
+          </ResponsiveWrapper>
+        )}
 
         <div className={styles.dispenseDetailsContainer}>
           <NumberInput
