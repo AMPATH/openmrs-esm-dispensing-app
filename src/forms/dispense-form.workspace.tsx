@@ -29,6 +29,7 @@ import {
   markEncounterAsStale,
   revalidate,
 } from '../utils';
+import { AMPATH_FHIR_EXT_BATCH_NUMBER } from '../constants';
 import { type PharmacyConfig } from '../config-schema';
 import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
 import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
@@ -48,6 +49,7 @@ type DispenseFormProps = {
   quantityDispensed: number;
   customWorkspaceTitle?: string;
   onWorkspaceClosed?(): void;
+  batchNumber?: string;
 };
 
 const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}>> = ({
@@ -172,12 +174,12 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
               ),
               MedicationRequestFulfillerStatus.completed,
             ).then(() => {
-               if (config.dispenseBehavior.endActiveVisitOnCompletingOrder) {
-                  if (activeVisit) {
-                    const visitUuid = activeVisit?.uuid;
-                    endVisit(visitUuid).then(() => {});
-                  }
+              if (config.dispenseBehavior.endActiveVisitOnCompletingOrder) {
+                if (activeVisit) {
+                  const visitUuid = activeVisit?.uuid;
+                  endVisit(visitUuid).then(() => {});
                 }
+              }
               return response;
             });
           }
@@ -381,7 +383,21 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                   <StockDispense
                     inventoryItem={inventoryItem}
                     medicationDispense={medicationDispense}
-                    updateInventoryItem={setInventoryItem}
+                    updateInventoryItem={(item) => {
+                      setInventoryItem(item);
+                      if (item?.batchNumber) {
+                        const batchNumberObj = {
+                          url: AMPATH_FHIR_EXT_BATCH_NUMBER,
+                          valueString: item.batchNumber,
+                        };
+                        const existingExtensions = (medicationDispensePayload?.extension || []).filter(
+                          (ext) => ext.url !== AMPATH_FHIR_EXT_BATCH_NUMBER,
+                        );
+                        updateMedicationDispense({
+                          extension: [...existingExtensions, batchNumberObj],
+                        });
+                      }
+                    }}
                   />
                 )}
               </div>

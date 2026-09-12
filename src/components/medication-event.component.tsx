@@ -6,6 +6,7 @@ import { isDesktop, useLayoutType } from '@openmrs/esm-framework';
 import { type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
 import {
   calculateIsFreeTextDosage,
+  getBatchNumber,
   getDosageInstruction,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
@@ -29,13 +30,14 @@ const MedicationEvent: React.FC<{
   const quantity: Quantity = getQuantity(medicationEvent);
   const refillsAllowed: number = getRefillsAllowed(medicationEvent);
   const isTablet = !isDesktop(useLayoutType());
+  const batchNumber = getBatchNumber(medicationEvent as MedicationDispense);
 
   const renewal = useMemo(() => {
     if (medicationEvent?.priorPrescription && medicationEvent?.status?.trim()?.toUpperCase() === 'ACTIVE') {
       return t('renewal', 'Renewal');
     }
     return null;
-  }, [medicationEvent]);
+  }, [medicationEvent, t]);
 
   return (
     <Tile
@@ -93,6 +95,12 @@ const MedicationEvent: React.FC<{
           <p className={styles.bodyLong01}>
             <span className={styles.label01}>{t('refills', 'Refills').toUpperCase()}</span>{' '}
             <span className={styles.refills}>{refillsAllowed}</span>
+          </p>
+        )}
+        {batchNumber && (
+          <p className={styles.bodyLong01}>
+            <span className={styles.label01}>{t('batchNumber', 'Batch Number').toUpperCase()}</span>{' '}
+            <span className={styles.batchNumber}>{batchNumber}</span>
           </p>
         )}
         {dosageInstruction?.text && <p className={styles.bodyLong01}>{dosageInstruction.text}</p>}

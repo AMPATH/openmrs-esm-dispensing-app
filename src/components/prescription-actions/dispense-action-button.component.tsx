@@ -17,8 +17,9 @@ type DispenseActionButtonProps = {
   quantityDispensed: number;
   disabled: boolean;
   billStatus: BillStatus;
-  isClaim: boolean;
-  isClaimSubmitted: boolean;
+  isClaim?: boolean;
+  isClaimSubmitted?: boolean;
+  batchNumber?: string;
 };
 
 const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
@@ -34,15 +35,23 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   billStatus = 'PAID',
   isClaim,
   isClaimSubmitted,
+  batchNumber,
 }) => {
   const { t } = useTranslation();
   const dispenseWorkspaceProps = {
     patientUuid,
     encounterUuid,
-    medicationDispense: initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, true),
+    medicationDispense: initiateMedicationDispenseBody(
+      medicationRequestBundle.request,
+      session,
+      providers,
+      true,
+      batchNumber,
+    ),
     medicationRequestBundle,
     quantityRemaining,
     quantityDispensed,
+    batchNumber,
     mode: 'enter',
   };
 

@@ -188,6 +188,7 @@ export interface Extension {
   url: string;
   valueDateTime?: string;
   valueCode?: MedicationRequestFulfillerStatus; // add other possibilties once we start using other extensions
+  valueString?: string;
 }
 
 export interface Medication {
@@ -556,6 +557,7 @@ export interface LineItem {
   item: string;
   priceName: string;
   status: string;
+  batchNumber: string;
 }
 export interface BillInvoice {
   uuid: string;

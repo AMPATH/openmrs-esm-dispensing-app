@@ -25,6 +25,7 @@ import {
   computeTotalQuantityOrdered,
   getAssociatedMedicationDispenses,
   getAssociatedMedicationRequest,
+  getBatchNumber,
   getConceptCoding,
   getConceptCodingDisplay,
   getConceptCodingUuid,
@@ -697,7 +698,7 @@ describe('Util Tests', () => {
       whenPrepared: '2023-01-01T14:00:00-05:00',
     };
 
-    test('should return declined if deleting most recent medication dispense and next most recent status declined', () => {
+    (test('should return declined if deleting most recent medication dispense and next most recent status declined', () => {
       const medicationRequestBundle: MedicationRequestBundle = {
         request: medicationRequest,
         dispenses: [
@@ -741,7 +742,7 @@ describe('Util Tests', () => {
         expect(computeNewFulfillerStatusAfterDelete(medicationDispenseOnHold, medicationRequestBundle, false)).toBe(
           MedicationRequestFulfillerStatus.completed,
         );
-      });
+      }));
     test('should return null if deleting a dispense with status completed', () => {
       const medicationRequestBundle: MedicationRequestBundle = {
         request: medicationRequest,
@@ -2943,6 +2944,29 @@ describe('Util Tests', () => {
         ],
       } as DosageInstruction;
       expect(calculateIsFreeTextDosage(dosageInstruction)).toBe(true);
+    });
+  });
+
+  describe('test getBatchNumber', () => {
+    test('should extract batch number from medication dispense extensions', () => {
+      const medicationDispense = {
+        extension: [
+          {
+            url: 'https://ampath.or.ke/fhir/StructureDefinition/medicationdispense-batch-number',
+            valueString: 'BATCH-2024-001',
+          },
+        ],
+      } as unknown as MedicationDispense;
+
+      expect(getBatchNumber(medicationDispense)).toBe('BATCH-2024-001');
+    });
+
+    test('should return undefined when no batch number extension exists', () => {
+      const medicationDispense = {
+        extension: [],
+      } as unknown as MedicationDispense;
+
+      expect(getBatchNumber(medicationDispense)).toBeUndefined();
     });
   });
 });

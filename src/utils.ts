@@ -18,6 +18,7 @@ import {
 } from './types';
 import { createGlobalStore, fhirBaseUrl, getConfig, parseDate, useStore } from '@openmrs/esm-framework';
 import {
+  AMPATH_FHIR_EXT_BATCH_NUMBER,
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
@@ -382,6 +383,14 @@ export function getConceptCodingUuid(codings: Coding[]): string {
  */
 export function getDateRecorded(medicationDispense: MedicationDispense): string {
   return medicationDispense?.extension?.find((ext) => ext.url === OPENMRS_FHIR_EXT_DISPENSE_RECORDED)?.valueDateTime;
+}
+
+/**
+ * Fetch the "batch number" extension off a medication dispense
+ * @param medicationDispense
+ */
+export function getBatchNumber(medicationDispense: MedicationDispense): string | undefined {
+  return medicationDispense?.extension?.find((ext) => ext.url === AMPATH_FHIR_EXT_BATCH_NUMBER)?.valueString;
 }
 
 export function getDosageInstruction(dosageInstructions: Array<DosageInstruction>): DosageInstruction {

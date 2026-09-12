@@ -10,6 +10,7 @@ import {
   type ProviderRequestResponse,
   type ValueSet,
 } from '../types';
+import { AMPATH_FHIR_EXT_BATCH_NUMBER } from '../constants';
 
 export function saveMedicationDispense(
   medicationDispense: MedicationDispense,
@@ -101,6 +102,7 @@ export function initiateMedicationDispenseBody(
   session: Session,
   providers: Provider[],
   populateDispenseInformation: boolean,
+  batchNumber?: string,
 ): MedicationDispense {
   let medicationDispense: MedicationDispense = {
     resourceType: 'MedicationDispense',
@@ -125,7 +127,16 @@ export function initiateMedicationDispenseBody(
       reference: session?.sessionLocation ? `Location/${session.sessionLocation.uuid}` : '',
     },
     whenHandedOver: dayjs().format(),
+    extension: [],
   };
+
+  if (batchNumber) {
+    const batchNumberObj = {
+      url: AMPATH_FHIR_EXT_BATCH_NUMBER,
+      valueString: batchNumber,
+    };
+    medicationDispense.extension = [...(medicationDispense.extension ?? []), batchNumberObj];
+  }
 
   if (populateDispenseInformation) {
     medicationDispense = {
@@ -139,18 +150,20 @@ export function initiateMedicationDispenseBody(
       dosageInstruction: [
         {
           // see https://openmrs.atlassian.net/browse/O3-3791 for an explanation for the reason for the below
-          text: [
-            medicationRequest.dosageInstruction[0].text,
-            medicationRequest.dosageInstruction[0].additionalInstruction?.length > 0
-              ? medicationRequest.dosageInstruction[0].additionalInstruction[0].text
-              : null,
-          ]
-            .filter((str) => str != null)
-            .join(' '),
-          timing: medicationRequest.dosageInstruction[0].timing,
+          text: medicationRequest.dosageInstruction?.[0]
+            ? [
+                medicationRequest.dosageInstruction[0].text,
+                medicationRequest.dosageInstruction[0].additionalInstruction?.length > 0
+                  ? medicationRequest.dosageInstruction[0].additionalInstruction[0].text
+                  : null,
+              ]
+                .filter((str) => str != null)
+                .join(' ')
+            : undefined,
+          timing: medicationRequest.dosageInstruction?.[0]?.timing,
           asNeededBoolean: false,
-          route: medicationRequest.dosageInstruction[0].route,
-          doseAndRate: medicationRequest.dosageInstruction[0].doseAndRate
+          route: medicationRequest.dosageInstruction?.[0]?.route,
+          doseAndRate: medicationRequest.dosageInstruction?.[0]?.doseAndRate
             ? medicationRequest.dosageInstruction[0].doseAndRate
             : [
                 {
