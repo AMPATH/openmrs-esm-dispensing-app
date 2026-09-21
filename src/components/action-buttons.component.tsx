@@ -93,8 +93,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
               return;
             }
             setIsClaim(true);
-            if (claimVisit && claimVisit?.workflow_state?.trim()?.toUpperCase() === 'DRAFT') {
-              setIsClaimSubmitted(false);
+            if (claimVisit) {
+              if (claimVisit?.workflow_state?.trim()?.toUpperCase() === 'DRAFT') {
+                setIsClaimSubmitted(false);
+              } else {
+                setIsClaimSubmitted(true);
+              }
             }
             if (orderBill.requires_preauth) {
               if (preauthRequests && preauthRequests.length) {

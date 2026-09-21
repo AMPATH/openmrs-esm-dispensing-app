@@ -8,6 +8,7 @@
   "allergiesCount_other": "{{count}} allergies",
   "allPrescriptions": "All prescriptions",
   "appName": "Pharmacy",
+  "batchNumber": "Batch Number",
   "cancel": "Cancel",
   "cancelled": "Cancelled",
   "checkFilters": "Check the filters above",
