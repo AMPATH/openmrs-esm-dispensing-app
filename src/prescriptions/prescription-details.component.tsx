@@ -47,7 +47,7 @@ const PrescriptionDetails: React.FC<{
   const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
   const { staleEncounterUuids } = useStaleEncounterUuids();
   const { orders, isLoading: isLoadingOrders } = useOrders(encounterUuid);
-  const { visit } = useEncounter(encounterUuid);
+  const { visit, isLoading: isLoadingEncounter } = useEncounter(encounterUuid);
   const { bills, isLoading: loadingBills } = useBills(patientUuid);
   // DO NOT REMOVE
   // const { activeVisit } = useVisit(patientUuid);
@@ -61,14 +61,13 @@ const PrescriptionDetails: React.FC<{
   //   return '';
   // }, [activeVisit]);
   const consentToken = useMemo(() => {
-    if (visit) {
+    if (!isLoadingEncounter && visit) {
       return (
         visit?.attributes?.find((atr) => atr?.attributeType?.uuid === '4962a633-c4f8-474c-857c-5c68c72fbbe3')?.value ??
         ''
       );
     }
-    return '';
-  }, [visit]);
+  }, [visit, isLoadingEncounter]);
   const { isLoading: isLoadingProviderClaim, claimVisit } = useProviderClaimPreview(consentToken);
   const { isLoading: isLoadingPreauthRequests, preauthRequests } = usePreauthPreview(consentToken);
   const hasActiveRequests = useMemo(() => {

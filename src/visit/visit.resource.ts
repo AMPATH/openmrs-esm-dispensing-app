@@ -20,17 +20,30 @@ export const endVisit = async (visitUuid: string) => {
 
 export const useEncounter = (encounterUuid: string) => {
   const customRep = 'custom:(uuid,visit)';
-  const url = `${restBaseUrl}/encounter/${encounterUuid}?v=${customRep}`;
+  const url = encounterUuid ? `${restBaseUrl}/encounter/${encounterUuid}?v=${customRep}` : null;
   const { data, error, isLoading, mutate } = useSWR<
     FetchResponse<{
-      uuid: string;
       visit: Visit;
     }>
   >(url, openmrsFetch);
 
+  const { isLoading: isLoadingVisit, error: visitError, visit } = usePatientVisit(data?.data?.visit?.uuid);
+
   return {
-    encounter: data?.data,
-    visit: data?.data?.visit,
+    visit,
+    error: error || visitError,
+    isLoading: isLoading || isLoadingVisit,
+    mutate,
+  };
+};
+
+export const usePatientVisit = (visitUuid: string | null | undefined) => {
+  const customRep = 'full';
+  const url = visitUuid ? `${restBaseUrl}/visit/${visitUuid}?v=${customRep}` : null;
+  const { data, error, isLoading, mutate } = useSWR<FetchResponse<Visit>>(url, openmrsFetch);
+
+  return {
+    visit: data?.data,
     error,
     isLoading,
     mutate,
