@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExtensionSlot, launchWorkspace, type Order, useConfig } from '@openmrs/esm-framework';
+import { ExtensionSlot, launchWorkspace2, type Order, useConfig } from '@openmrs/esm-framework';
 import { type MedicationRequestBundle, type BillStatus } from '../../types';
 import { type PharmacyConfig } from '../../config-schema';
 
@@ -24,8 +24,8 @@ const GenerateBillActionButton: React.FC<GenerateBillActionButtonProps> = ({
   const { t } = useTranslation();
   const { pharmacyServiceTypedUuid } = useConfig<PharmacyConfig>();
 
-  const launchBillWorkspace = () => {
-    launchWorkspace('create-order-bill-form-workspace', {
+  const launchBillWorkspace = async () => {
+    await launchWorkspace2('create-order-bill-form-workspace', {
       workspaceTitle: t('createOrderBill', 'Create order bill form'),
       order: order,
       quantity: medicationRequestBundle.request.dispenseRequest.quantity.value,
