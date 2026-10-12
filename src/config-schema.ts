@@ -109,7 +109,7 @@ export const configSchema = {
       useCurrentLocation: {
         _type: Type.Boolean,
         _description: 'Show medication requests from current location',
-        _default: false,
+        _default: true,
       },
     },
     restrictToVisitLocationDescendants: {
@@ -146,7 +146,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Substitution' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167862/",
-        _default: '2de6e1be-f2dd-4ba0-9516-8a611aa2af9b',
+        _default: '89d1a103-a154-4f73-b6bf-6a2822f55946',
       },
     },
     substitutionType: {
@@ -154,7 +154,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Type of Substitution' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167859/",
-        _default: 'b9c5bca0-d026-4245-a4d2-e4c0a8999082',
+        _default: '1b8a402f-3895-4683-9566-1ecdae12e13c',
       },
     },
   },
