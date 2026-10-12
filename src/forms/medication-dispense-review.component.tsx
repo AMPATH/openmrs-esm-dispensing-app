@@ -1,15 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { ComboBox, Dropdown, NumberInput, Stack, TextArea, Toggle } from '@carbon/react';
+import { ComboBox, Dropdown, InlineNotification, NumberInput, Stack, TextArea, Toggle } from '@carbon/react';
 import { OpenmrsDatePicker, useConfig, useSession, userHasAccess, ResponsiveWrapper } from '@openmrs/esm-framework';
-import {
-  getBatchNumber,
-  getConceptCodingUuid,
-  getMedicationReferenceOrCodeableConcept,
-  getOpenMRSMedicineDrugName,
-} from '../utils';
-import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
+import { getBatchNumber, getMedicationReferenceOrCodeableConcept } from '../utils';
+import { useDrugFormulations } from '../medication/medication.resource';
 import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import {
   blankSubstitution,
@@ -19,7 +14,7 @@ import {
   useSubstitutionTypeValueSet,
 } from '../medication-dispense/medication-dispense.resource';
 import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from '../constants';
-import { type Medication, type MedicationDispense } from '../types';
+import { type DrugFormulation, type LineItem, type MedicationDispense } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import MedicationCard from '../components/medication-card.component';
 import styles from '../components/medication-dispense-review.scss';
@@ -31,6 +26,7 @@ interface MedicationDispenseReviewProps {
   setIsFreeTextDosage: (isFreeTextDosage: boolean) => void;
   quantityRemaining: number;
   quantityDispensed: number;
+  billableDrugObj?: LineItem['billableDrugObj'];
 }
 
 const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
@@ -40,6 +36,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   setIsFreeTextDosage,
   quantityRemaining,
   quantityDispensed,
+  billableDrugObj,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
@@ -125,30 +122,25 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     setSubstitutionReasons(substitutionReasonOptions);
   }, [substitutionReasonValueSet]);
 
-  // if this an order for a drug by concept, but not a particular formulation, we already have access to concept uuid
-  const existingMedicationCodeableConceptUuid = getConceptCodingUuid(
-    getMedicationReferenceOrCodeableConcept(medicationDispense)?.medicationCodeableConcept?.coding,
+  const currentMedication = getMedicationReferenceOrCodeableConcept(medicationDispense);
+  const currentDrugName =
+    currentMedication?.medicationReference?.display ??
+    currentMedication?.medicationCodeableConcept?.coding?.find((c) => !c.system)?.display ??
+    currentMedication?.medicationCodeableConcept?.text;
+  const { drugFormulations: medicationFormulations } = useDrugFormulations(currentDrugName, isEditingFormulation);
+  const billableDrugUuid = billableDrugObj?.drug?.uuid;
+  const dispensedDrugUuid = medicationDispense.medicationReference?.reference?.split('/').pop();
+  const differsFromBilledDrug = Boolean(
+    billableDrugUuid && dispensedDrugUuid && billableDrugUuid !== dispensedDrugUuid,
   );
-  // otherwise we need to fetch the medication details to get the codeable concept
-  // (note that React Hooks should not be called conditionally, so we *always* call this hook, but it will return null if existingMedicationCodeableConcept is defined
-  const { medicationCodeableConceptUuid } = useMedicationCodeableConcept(
-    existingMedicationCodeableConceptUuid,
-    getMedicationReferenceOrCodeableConcept(medicationDispense).medicationReference?.reference,
-  );
-  // get the formulations
-  const { medicationFormulations } = useMedicationFormulations(
-    existingMedicationCodeableConceptUuid
-      ? existingMedicationCodeableConceptUuid
-      : medicationCodeableConceptUuid
-        ? medicationCodeableConceptUuid
-        : null,
-  );
+  const billedDrugName = billableDrugObj?.display ?? billableDrugObj?.name ?? billableDrugObj?.drug?.display;
 
   // check to see if the current dispense would be a substitution, and update accordingly
   const isSubstitution =
-    medicationRequest?.medicationReference?.reference &&
-    medicationDispense?.medicationReference?.reference &&
-    medicationRequest.medicationReference.reference != medicationDispense.medicationReference.reference;
+    differsFromBilledDrug ||
+    (medicationRequest?.medicationReference?.reference &&
+      medicationDispense?.medicationReference?.reference &&
+      medicationRequest.medicationReference.reference != medicationDispense.medicationReference.reference);
 
   const { substitution } = medicationDispense;
   useEffect(() => {
@@ -228,23 +220,24 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             <ResponsiveWrapper>
               <Dropdown
                 id="medicationFormulation"
-                items={medicationFormulations}
-                itemToString={(item: Medication) => getOpenMRSMedicineDrugName(item)}
+                items={medicationFormulations ?? []}
+                itemToString={(item: DrugFormulation) => item?.display ?? ''}
                 initialSelectedItem={{
                   ...medicationFormulations?.find(
-                    (formulation) => formulation.id === medicationDispense.medicationReference?.reference.split('/')[1],
+                    (formulation) =>
+                      formulation.uuid === medicationDispense.medicationReference?.reference.split('/')[1],
                   ),
                 }}
                 titleText={t('medicationFormulation', 'Medication Formulation')}
                 label={t('medicationFormulation', 'Medication Formulation')}
                 onChange={({ selectedItem }) => {
                   const typedItem = selectedItem;
-                  if ('Medication/' + typedItem.id !== medicationDispense.medicationReference.reference) {
+                  if ('Medication/' + typedItem.uuid !== medicationDispense.medicationReference.reference) {
                     updateMedicationDispense({
                       medicationCodeableConcept: undefined,
                       medicationReference: {
-                        reference: 'Medication/' + typedItem?.id,
-                        display: getOpenMRSMedicineDrugName(typedItem),
+                        reference: 'Medication/' + typedItem?.uuid,
+                        display: typedItem?.display,
                       },
                       quantity: {
                         ...medicationDispense.quantity,
@@ -276,6 +269,20 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             </ResponsiveWrapper>
           )}
         </div>
+
+        {differsFromBilledDrug && (
+          <InlineNotification
+            kind="warning"
+            lowContrast
+            hideCloseButton
+            title={t('billedDrugSubstitutionRequired', 'Drug substitution required')}
+            subtitle={t(
+              'billedDrugSubstitutionDisclaimer',
+              'The selected drug does not match the billed drug ({{billedDrug}}). Record this as a drug substitution and complete the substitution details before dispensing.',
+              { billedDrug: billedDrugName ?? billableDrugUuid },
+            )}
+          />
+        )}
 
         {isSubstitution && (
           <div className={styles.dispenseDetailsContainer}>
