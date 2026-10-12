@@ -9,6 +9,8 @@
   "allPrescriptions": "All prescriptions",
   "appName": "Pharmacy",
   "batchNumber": "Batch Number",
+  "billedDrugSubstitutionDisclaimer": "The selected drug does not match the billed drug ({{billedDrug}}). Record this as a drug substitution and complete the substitution details before dispensing.",
+  "billedDrugSubstitutionRequired": "Drug substitution required",
   "cancel": "Cancel",
   "cancelled": "Cancelled",
   "checkFilters": "Check the filters above",
