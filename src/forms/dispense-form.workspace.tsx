@@ -19,6 +19,7 @@ import {
   type MedicationRequestBundle,
   type InventoryItem,
   MedicationRequestFulfillerStatus,
+  type LineItem,
 } from '../types';
 import {
   calculateIsFreeTextDosage,
@@ -50,6 +51,7 @@ type DispenseFormProps = {
   customWorkspaceTitle?: string;
   onWorkspaceClosed?(): void;
   batchNumber?: string;
+  billableDrugObj?: LineItem['billableDrugObj'];
 };
 
 const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}>> = ({
@@ -63,6 +65,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
     quantityDispensed,
     customWorkspaceTitle,
     onWorkspaceClosed,
+    billableDrugObj,
   },
   closeWorkspace,
 }) => {
@@ -370,6 +373,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                   setIsFreeTextDosage={setIsFreeTextDosage}
                   quantityRemaining={quantityRemaining}
                   quantityDispensed={quantityDispensed}
+                  billableDrugObj={billableDrugObj}
                 />
                 {config.completeOrderWithThisDispense && mode === 'enter' && !medicationDispense?.id && (
                   <Checkbox

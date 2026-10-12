@@ -1,6 +1,6 @@
 import React from 'react';
-import { vi, describe, test, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { vi, describe, expect, test, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import { useConfig, useSession } from '@openmrs/esm-framework';
 import { type MedicationDispense, MedicationDispenseStatus } from '../types';
 import MedicationDispenseReview from './medication-dispense-review.component';
@@ -40,7 +40,7 @@ beforeEach(() => {
 });
 
 describe('Medication Dispense Review Component tests', () => {
-  test('component should render medication dispense review', () => {
+  test('shows a substitution warning only when the selected drug differs from the billed drug', () => {
     const medicationDispense: MedicationDispense = {
       resourceType: 'MedicationDispense',
       id: 'ff2fa24c-b0d4-457c-bbdf-7d6512b8b746',
@@ -143,20 +143,42 @@ describe('Medication Dispense Review Component tests', () => {
       ],
       substitution: {
         wasSubstituted: false,
+        reason: [{ coding: [{ code: '' }] }],
+        type: { coding: [{ code: '' }] },
       },
     };
 
     const mockUpdate = vi.fn();
-    render(
+    const props = {
+      medicationDispense,
+      updateMedicationDispense: mockUpdate,
+      isFreeTextDosage: false,
+      setIsFreeTextDosage: () => {},
+      quantityRemaining: 30,
+      quantityDispensed: 30,
+    };
+    const { rerender } = render(<MedicationDispenseReview {...props} />);
+
+    const billedDrugObj = {
+      uuid: 'billable-item-uuid',
+      display: 'Metformin 850 mg Oral Tablet',
+      drug: { uuid: '78f96684-dfbe-11e9-8a34-2a2ae2dbcce4', display: 'Metformin 850 mg Oral Tablet' },
+    };
+
+    rerender(<MedicationDispenseReview {...props} billableDrugObj={billedDrugObj} />);
+    expect(screen.queryByText('Drug substitution required')).not.toBeInTheDocument();
+
+    rerender(
       <MedicationDispenseReview
-        medicationDispense={medicationDispense}
-        updateMedicationDispense={mockUpdate}
-        isFreeTextDosage={false}
-        setIsFreeTextDosage={() => {}}
-        quantityRemaining={30}
-        quantityDispensed={30}
+        {...props}
+        billableDrugObj={{
+          ...billedDrugObj,
+          drug: { uuid: 'billed-drug-uuid', display: 'Metformin 850 mg Oral Tablet' },
+        }}
       />,
     );
+
+    expect(screen.getByText('Drug substitution required')).toBeInTheDocument();
 
     // TODO test expected views and various interactions
   });

@@ -3,7 +3,7 @@ import { Button, Tag } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { launchWorkspace2, type Session } from '@openmrs/esm-framework';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
-import { type Provider, type MedicationRequestBundle, type BillStatus } from '../../types';
+import { type Provider, type MedicationRequestBundle, type BillStatus, type LineItem } from '../../types';
 // import { usePatientBills } from '../../bill/bill.resource';
 
 type DispenseActionButtonProps = {
@@ -20,6 +20,7 @@ type DispenseActionButtonProps = {
   isClaim?: boolean;
   isClaimSubmitted?: boolean;
   batchNumber?: string;
+  billableDrugObj?: LineItem['billableDrugObj'];
 };
 
 const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
@@ -36,6 +37,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   isClaim,
   isClaimSubmitted,
   batchNumber,
+  billableDrugObj,
 }) => {
   const { t } = useTranslation();
   const dispenseWorkspaceProps = {
@@ -52,6 +54,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
     quantityRemaining,
     quantityDispensed,
     batchNumber,
+    billableDrugObj,
     mode: 'enter',
   };
 

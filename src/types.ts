@@ -275,6 +275,19 @@ export enum MedicationDispenseStatus {
   declined = 'declined',
 }
 
+export interface DrugFormulation {
+  uuid: string;
+  display: string;
+  dosageForm: {
+    uuid: string;
+    display: string;
+  };
+  concept: {
+    uuid: string;
+    display: string;
+  };
+}
+
 export interface MedicationFormulationsResponse {
   resourceType: string;
   id: string;
@@ -558,6 +571,15 @@ export interface LineItem {
   priceName: string;
   status: string;
   batchNumber: string;
+  billableDrugObj?: {
+    uuid: string;
+    display?: string;
+    name?: string;
+    drug?: {
+      uuid: string;
+      display?: string;
+    };
+  };
 }
 export interface BillInvoice {
   uuid: string;

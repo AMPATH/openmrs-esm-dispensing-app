@@ -70,6 +70,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
   const { orderBill, isLoadingOrderBill } = useOrderBill(order?.orderNumber);
   const { odooBills, isLoadingOdooBills } = useOdooBills(order?.patient?.uuid, config.enableOdooBilling);
+  const billedLineItem = useMemo(() => {
+    if (!orderBill) {
+      return undefined;
+    }
+    const bill = bills?.find((b) => b?.uuid === orderBill.bill_uuid);
+    return bill?.lineItems?.find((lineItem) => lineItem?.uuid === orderBill.line_item_uuid);
+  }, [bills, orderBill]);
 
   useEffect(() => {
     if (!config.enableOdooBilling) {
@@ -210,6 +217,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     isClaim,
     isClaimSubmitted,
     batchNumber,
+    billableDrugObj: billedLineItem?.billableDrugObj,
     mutated,
   };
 
